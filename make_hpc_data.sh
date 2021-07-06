@@ -12,4 +12,4 @@ module load python/3.8
 source ~/earth/bin/activate
 
 cd $PROJECT_DIR
-python src/data/make_dataset.py data/raw data/interim data/processed
+python ./src/data/make_dataset.py data/raw data/interim data/processed
