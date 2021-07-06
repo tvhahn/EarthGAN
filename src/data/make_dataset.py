@@ -113,6 +113,7 @@ def main(input_filepath, interim_filepath, output_filepath):
 
     # scale all data and save in processed folder
     for i, file in enumerate(file_list):
+        print(file)
         time_step = re.findall("[0-9]+", str(file))[-1]
         x_save_name = f"x_{time_step}.npy"
         x_truth_save_name = f"x_truth_{time_step}.npy"

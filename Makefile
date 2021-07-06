@@ -25,9 +25,9 @@ ifeq (True,$(HAS_CONDA)) # assume on local
 	@echo ">>> Detected conda. Assume local computer. Installing packages from yml."
 	conda env create -f envearth.yml
 else # assume on HPC
-	@echo ">>> No Conda detected. Assume on HPC."
-	bash make_hpc_venv.sh
-	@echo ">>> venv created. Activate with source ~/weibull/bin/activate"
+	@echo ">>> No Conda detected. Assume on HPC. Creating venv with Jupyter Lab functionality."
+	bash make_hpc_venv.sh $(PROJECT_DIR)
+	@echo ">>> venv created. Activate with source ~/earth/bin/activate"
 endif
 
 ## Download data
@@ -50,7 +50,11 @@ endif
 
 ## Make Dataset
 data: requirements
+ifeq (True,$(HAS_CONDA)) # assume on local
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/interim data/processed
+else # assume on HPC
+	sbatch make_hpc_data.sh
+endif
 
 ## Delete all compiled Python files
 clean:

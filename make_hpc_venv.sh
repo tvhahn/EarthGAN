@@ -1,10 +1,16 @@
 #!/bin/bash
+
+PROJECT_DIR=$1
+
+
 cd
 module load python/3.8
-virtualenv ~/weibull
-source ~/weibull/bin/activate
+virtualenv ~/earth
+source ~/earth/bin/activate
 pip install --no-index --upgrade pip
-pip install --no-index pandas scipy scikit_learn matplotlib seaborn
+pip install --no-index xarray==0.16.2 scipy==1.6.0 netCDF4==1.5.6
+pip install --no-index h5netcdf==0.7.4 matplotlib==3.3.4
+pip install --no-index pandas matplotlib seaborn
 pip install --no-index torch jupyterlab click
 pip install python-dotenv
 
@@ -17,11 +23,5 @@ EOF
 
 chmod u+x $VIRTUAL_ENV/bin/notebook.sh
 
-# install unrar in environment since it does not
-# exist by default on HPC system -- make from source
-cd scratch
-wget https://www.rarlab.com/rar/unrarsrc-6.0.7.tar.gz
-tar -xf unrarsrc-6.0.7.tar.gz
-cd unrar
-make -f makefile
-install -v -m755 unrar ~/weibull/bin
+cd $PROJECT_DIR
+pip install -e .
