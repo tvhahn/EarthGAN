@@ -53,7 +53,7 @@ data: requirements
 ifeq (True,$(HAS_CONDA)) # assume on local
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/interim data/processed
 else # assume on HPC
-	sbatch make_hpc_data.sh
+	sbatch make_hpc_data.sh $(PROJECT_DIR)
 endif
 
 ## Delete all compiled Python files
