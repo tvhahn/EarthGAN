@@ -54,7 +54,6 @@ def main(input_filepath, interim_filepath, output_filepath):
     logger = logging.getLogger(__name__)
     logger.info("making final data set from raw data")
 
-    # folder_raw_data = root_dir / 'data/raw/' # raw data folder that holds the .nc files
     folder_raw_data = (
         root_dir / input_filepath
     )  # raw data folder that holds the .nc files
