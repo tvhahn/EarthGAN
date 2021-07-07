@@ -46,7 +46,7 @@ About Data:
 @click.command()
 @click.argument("input_filepath", type=click.Path(exists=True))
 @click.argument("interim_filepath", type=click.Path(exists=True))
-@click.argument("output_filepath", type=click.Path())
+@click.argument("output_filepath", type=click.Path(exists=True))
 def main(input_filepath, interim_filepath, output_filepath):
     """Runs data processing scripts to turn raw data from (../raw) into
     cleaned data ready to be analyzed (saved in ../processed).
