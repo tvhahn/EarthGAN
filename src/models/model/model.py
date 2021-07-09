@@ -1,3 +1,9 @@
+######################
+# Copyright Yin Li - https://github.com/eelregit/map2map
+# Used under GPL-3.0 License
+######################
+
+
 from math import log2
 import torch
 import torch.nn as nn
@@ -6,7 +12,7 @@ from .narrow import narrow_by
 from .resample import Resampler
 
 
-class G(nn.Module):
+class Generator(nn.Module):
     def __init__(self, in_chan, out_chan, scale_factor=16,
                  chan_base=512, chan_min=64, chan_max=512, cat_noise=False,
                  **kwargs):
@@ -136,7 +142,7 @@ class AddNoise(nn.Module):
         return x
 
 
-class D(nn.Module):
+class Discriminator(nn.Module):
     def __init__(self, in_chan, out_chan, scale_factor=16,
                  chan_base=512, chan_min=64, chan_max=512,
                  **kwargs):

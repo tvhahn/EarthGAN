@@ -1,3 +1,9 @@
+######################
+# Copyright Yin Li - https://github.com/eelregit/map2map
+# Used under GPL-3.0 License
+######################
+
+
 import torch.nn as nn
 import torch.nn.functional as F
 

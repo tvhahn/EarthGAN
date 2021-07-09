@@ -51,7 +51,7 @@ endif
 ## Make Dataset
 data: requirements
 ifeq (True,$(HAS_CONDA)) # assume on local
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/interim data/processed
+	bash make_local_data.sh $(PROJECT_DIR)
 else # assume on HPC
 	sbatch make_hpc_data.sh $(PROJECT_DIR)
 endif
