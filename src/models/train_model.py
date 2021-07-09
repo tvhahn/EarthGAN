@@ -14,6 +14,7 @@ from src.models.loss.wasserstein import gradient_penalty
 #######################################################
 # Set Hyperparameters
 #######################################################
+
 device = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 1e-4
 NUM_EPOCHS = 2
@@ -21,6 +22,7 @@ BATCH_SIZE = 2
 CRITIC_ITERATIONS = 5
 LAMBDA_GP = 10
 GEN_PRETRAIN_EPOCHS= 5 # number of epochs to pretrain generator
+
 #######################################################
 
 
@@ -78,8 +80,6 @@ for epoch in range(NUM_EPOCHS):
             for _ in range(CRITIC_ITERATIONS):
                 fake = gen(x_input)
                 
-        #         loss = criterion(output, x_target)
-                
                 critic_real = critic(torch.cat([x_truth, x_up], dim=1)).view(-1)
                 critic_fake = critic(torch.cat([fake, x_up], dim=1)).view(-1)
                 
@@ -88,8 +88,6 @@ for epoch in range(NUM_EPOCHS):
                                     torch.cat([fake, x_up], dim=1),  # fake
                                     device=device)
 
-        #         gp = wgan_grad_penalty(critic, torch.cat([fake, x_up], dim=1), torch.cat([x_truth, x_up], dim=1))
-                
                 loss_critic = (
                         -(torch.mean(critic_real) - torch.mean(critic_fake)) + LAMBDA_GP * gp
                     )
@@ -97,3 +95,10 @@ for epoch in range(NUM_EPOCHS):
                 critic.zero_grad()
                 loss_critic.backward(retain_graph=True)
                 opt_critic.step()
+
+            # train generator after every N critic iterations
+            gen_fake = critic(torch.cat([fake, x_up], dim=1)).reshape(-1)
+            loss_gen = -torch.mean(gen_fake)
+            gen.zero_grad()
+            loss_gen.backward()
+            opt_gen.step()

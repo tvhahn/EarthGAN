@@ -8,8 +8,8 @@ from math import log2
 import torch
 import torch.nn as nn
 
-from .narrow import narrow_by
-from .resample import Resampler
+from src.models.model.narrow import narrow_by
+from src.models.model.resample import Resampler
 
 
 class Generator(nn.Module):
