@@ -3,13 +3,42 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import torchvision
+from torch.utils.tensorboard import SummaryWriter # print to tensorboard
 from torch.utils.data import DataLoader
 from pathlib import Path
+import matplotlib.pyplot as plt
 
 
 from src.models.utils.create_batch import EarthDataTrain
 from src.models.model.model import Generator, Discriminator, init_weights
 from src.models.loss.wasserstein import gradient_penalty
+
+########################################################
+# Helper function
+def plot_fake_truth(fake, x_truth):
+    plt.switch_backend('agg')    
+    with torch.no_grad():
+        fake = gen(x_input).cpu()
+        x_truth = x_truth.cpu()
+        color_scheme='inferno'
+        no_col = 10
+        fig, ax = plt.subplots(2,no_col, figsize=(18,8))
+        b, v, r, h, w = fake.shape
+        for i in range(no_col):
+            bi = torch.randint(b,(1,)).item()
+            vi = torch.randint(v,(1,)).item()
+            ri = torch.randint(r,(1,)).item()
+            ax[0,i].pcolormesh(fake[bi,vi,ri,:,:].cpu(), cmap=color_scheme)
+            ax[0,i].get_xaxis().set_visible(False)
+            ax[0,i].get_yaxis().set_visible(False)
+            ax[0,i].title.set_text(f'v={vi}, r={ri}')
+            ax[1,i].pcolormesh(x_truth[bi,vi,ri,:,:].cpu(), cmap=color_scheme)
+            ax[1,i].get_xaxis().set_visible(False)
+            ax[1,i].get_yaxis().set_visible(False)
+        plt.subplots_adjust(wspace=0, hspace=0)
+        
+    return fig
 
 #######################################################
 # Set Hyperparameters
@@ -39,6 +68,10 @@ loader = DataLoader(
     batch_size=BATCH_SIZE,
     shuffle=True,
 )
+
+# set summary writer for Tensorboard
+writer_results = SummaryWriter(f"logs/results")
+step = 0
 
 gen = Generator(in_chan=4, out_chan=4, scale_factor=8, chan_base=32, chan_min=32, chan_max=64, cat_noise=True).to(device)
 critic = Discriminator(in_chan=8, out_chan=8, scale_factor=8, chan_base=32, chan_min=32, chan_max=64).to(device)
@@ -102,3 +135,9 @@ for epoch in range(NUM_EPOCHS):
             gen.zero_grad()
             loss_gen.backward()
             opt_gen.step()
+        with torch.no_grad():
+            fake = gen(x_input)
+            fig = plot_fake_truth(fake, x_truth)
+            writer_results.add_figure("Results", fig, global_step=step)
+
+        step += 1
