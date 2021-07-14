@@ -15,6 +15,56 @@ from src.models.utils.create_batch import EarthDataTrain
 from src.models.model.model import Generator, Discriminator, init_weights
 from src.models.loss.wasserstein import gradient_penalty
 
+#######################################################
+# Set Hyperparameters
+#######################################################
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+LEARNING_RATE = 1e-4
+NUM_EPOCHS = 20
+BATCH_SIZE = 2
+CRITIC_ITERATIONS = 5
+LAMBDA_GP = 10
+GEN_PRETRAIN_EPOCHS = 80  # number of epochs to pretrain generator
+
+
+#######################################################
+# Set Directories
+#######################################################
+
+# check if "scratch" path exists in the home directory
+# if it does, assume we are on HPC
+scratch_path = Path.home() / 'scratch'
+if scratch_path.exists():
+    print('Assume on HPC')
+else:
+    print('Assume on local compute')
+
+# set time
+model_start_time = datetime.datetime.now().strftime("%Y_%m_%d_%H%M%S")
+
+if scratch_path.exists():
+    # for HPC
+    root_dir = scratch_path / "earth-mantle-surrogate"
+    print(root_dir)
+
+    path_input_folder = root_dir / "processed/input"
+    path_truth_folder = root_dir / "processed/truth"
+    path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
+    Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
+
+else:
+    # for local compute
+    root_dir = Path.cwd().parent.parent  # set the root directory as a Pathlib path
+    print(root_dir)
+
+    path_input_folder = root_dir / "data/processed/input"
+    path_truth_folder = root_dir / "data/processed/truth"
+    path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
+    Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
+
+
+
 ########################################################
 # Helper functions
 #######################################################
@@ -44,31 +94,8 @@ def plot_fake_truth(fake, x_truth):
 
     return fig
 
-
-#######################################################
-# Set Hyperparameters
 #######################################################
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-LEARNING_RATE = 1e-4
-NUM_EPOCHS = 20
-BATCH_SIZE = 2
-CRITIC_ITERATIONS = 5
-LAMBDA_GP = 10
-GEN_PRETRAIN_EPOCHS = 80  # number of epochs to pretrain generator
-
-#######################################################
-
-
-root_dir = Path.cwd().parent.parent  # set the root directory as a Pathlib path
-print(root_dir)
-
-model_start_time = datetime.datetime.now().strftime("%Y_%m_%d_%H%M%S")
-
-path_input_folder = root_dir / "data/processed/input"
-path_truth_folder = root_dir / "data/processed/truth"
-path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
-Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
 
 earth_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
 
@@ -81,7 +108,6 @@ loader = DataLoader(
 # set summary writer for Tensorboard
 writer_results = SummaryWriter(root_dir / "models/interim/logs/" / model_start_time)
 
-
 gen = Generator(
     in_chan=4,
     out_chan=4,
@@ -93,7 +119,12 @@ gen = Generator(
 ).to(device)
 
 critic = Discriminator(
-    in_chan=8, out_chan=8, scale_factor=8, chan_base=32, chan_min=32, chan_max=64
+    in_chan=8, 
+    out_chan=8, 
+    scale_factor=8, 
+    chan_base=32, 
+    chan_min=32, 
+    chan_max=64
 ).to(device)
 
 # initialize weights
