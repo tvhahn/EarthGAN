@@ -22,10 +22,10 @@ from src.models.loss.wasserstein import gradient_penalty
 device = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 1e-4
 NUM_EPOCHS = 20
-BATCH_SIZE = 2
+BATCH_SIZE = 1
 CRITIC_ITERATIONS = 5
 LAMBDA_GP = 10
-GEN_PRETRAIN_EPOCHS = 80  # number of epochs to pretrain generator
+GEN_PRETRAIN_EPOCHS = 1  # number of epochs to pretrain generator
 
 
 #######################################################
@@ -112,9 +112,9 @@ gen = Generator(
     in_chan=4,
     out_chan=4,
     scale_factor=8,
-    chan_base=32,
-    chan_min=32,
-    chan_max=64,
+    chan_base=64,
+    chan_min=64,
+    chan_max=128,
     cat_noise=True,
 ).to(device)
 
@@ -122,9 +122,9 @@ critic = Discriminator(
     in_chan=8, 
     out_chan=8, 
     scale_factor=8, 
-    chan_base=32, 
-    chan_min=32, 
-    chan_max=64
+    chan_base=64, 
+    chan_min=64, 
+    chan_max=128
 ).to(device)
 
 # initialize weights
@@ -188,6 +188,7 @@ for epoch in range(NUM_EPOCHS):
             gen.zero_grad()
             loss_gen.backward()
             opt_gen.step()
+
 
     with torch.no_grad():
         fake = gen(x_input)
