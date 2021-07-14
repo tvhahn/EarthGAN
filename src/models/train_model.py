@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from pathlib import Path
 import matplotlib.pyplot as plt
 import datetime
+import sys
 
 
 from src.models.utils.create_batch import EarthDataTrain
@@ -40,6 +41,9 @@ if scratch_path.exists():
 else:
     print('Assume on local compute')
 
+# path for processed data is an argument to running python file
+path_processed_data = Path(sys.argv[1])
+
 # set time
 model_start_time = datetime.datetime.now().strftime("%Y_%m_%d_%H%M%S")
 
@@ -48,8 +52,8 @@ if scratch_path.exists():
     root_dir = scratch_path / "earth-mantle-surrogate"
     print(root_dir)
 
-    path_input_folder = root_dir / "processed/input"
-    path_truth_folder = root_dir / "processed/truth"
+    path_input_folder = path_processed_data / "input"
+    path_truth_folder = path_processed_data / "truth"
     path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
     Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
 
@@ -58,8 +62,8 @@ else:
     root_dir = Path.cwd().parent.parent  # set the root directory as a Pathlib path
     print(root_dir)
 
-    path_input_folder = root_dir / "data/processed/input"
-    path_truth_folder = root_dir / "data/processed/truth"
+    path_input_folder = path_processed_data / "input"
+    path_truth_folder = path_processed_data / "truth"
     path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
     Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
 
