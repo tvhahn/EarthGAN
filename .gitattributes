@@ -2,3 +2,11 @@ notebooks/scratch/*.ipynb linguist-documentation
 notebooks/1.0_data-explore.ipynb linguist-documentation
 # notebooks/scratch/test_count_figure.ipynb linguist-documentation
 *explore.ipynb linguist-documentation
+notebooks/scratch/1.0_data-explore-print-all.ipynb linguist-documentation
+notebooks/scratch/1.0_data-loader-first-attempt.ipynb linguist-documentation  
+notebooks/scratch/1.0_data-prep.ipynb linguist-documentation                  
+notebooks/scratch/1.0_data-prep-practice_V1.ipynb linguist-documentation     
+notebooks/scratch/1.0_data-prep-update.ipynb linguist-documentation          
+notebooks/scratch/1.0_practice-3d-convolutions.ipynb linguist-documentation   
+notebooks/scratch/1.0_srsgan-first-attempt.ipynb linguist-documentation     
+notebooks/scratch/1.0_srsgan-update.ipynb linguist-documentation
