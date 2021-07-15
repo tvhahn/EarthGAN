@@ -10,13 +10,14 @@
 
 module load python/3.8
 
-PROJECTDIR=~/projects/def-mechefsk/tvhahn/earth-mantle-surrogate
+PROJECT_DIR=$1
 
 source ~/earth/bin/activate
 
 # copy processed data from scratch to the temporary directory used for batch job
+# this will be much faster as the train_model.py rapidly access the training data
 mkdir $SLURM_TMPDIR/data
 cp -r ~/scratch/earth-mantle-surrogate/processed $SLURM_TMPDIR/data
 
 # begin training
-python $PROJECTDIR/src/models/train_model.py $SLURM_TMPDIR/data/processed
+python $PROJECT_DIR/src/models/train_model.py $SLURM_TMPDIR/data/processed

@@ -58,11 +58,11 @@ endif
 
 
 ## Train the models
-train: requirements
+train:
 ifeq (True,$(HAS_CONDA)) # assume on local
-	python ./src/models/train_model.py ./data/processed -c 2021_07_15_093623
+	bash train_bash_scripts/train_model_local.sh $(PROJECT_DIR)
 else # assume on HPC
-	sbatch make_hpc_data.sh $(PROJECT_DIR)
+	sbatch train_bash_scripts/train_model_hpc.sh $(PROJECT_DIR)
 endif
 
 ## Delete all compiled Python files
