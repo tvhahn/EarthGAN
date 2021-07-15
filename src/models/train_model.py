@@ -9,7 +9,8 @@ from torch.utils.data import DataLoader
 from pathlib import Path
 import matplotlib.pyplot as plt
 import datetime
-import sys
+import re
+import argparse
 
 
 from src.models.utils.create_batch import EarthDataTrain
@@ -22,74 +23,11 @@ from src.models.loss.wasserstein import gradient_penalty
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 1e-4
-NUM_EPOCHS = 2
+NUM_EPOCHS = 21
 BATCH_SIZE = 1
 CRITIC_ITERATIONS = 5
 LAMBDA_GP = 10
-GEN_PRETRAIN_EPOCHS = 5  # number of epochs to pretrain generator
-
-
-#######################################################
-# Set Directories
-#######################################################
-
-# check if "scratch" path exists in the home directory
-# if it does, assume we are on HPC
-scratch_path = Path.home() / 'scratch'
-if scratch_path.exists():
-    print('Assume on HPC')
-else:
-    print('Assume on local compute')
-
-# path for processed data is an argument to running python file
-path_processed_data = Path(sys.argv[1])
-
-# if loading the model from a checkpoint, a checkpoint folder name
-# should be passed as an argument, like: 2021_07_14_185903
-# the various .pt files will be inside the checkpoint folder 
-# FUTURE-TO-DO: Use argparse
-try:
-    prev_checkpoint_folder_name = sys.argv[2]
-except:
-    # assume that not looking for previous checkpoint
-    prev_checkpoint_folder_name = "dummy_folder_name"
-    print("No checkpoint folder name passed. Training from beginning.") 
-
-# set time
-model_start_time = datetime.datetime.now().strftime("%Y_%m_%d_%H%M%S")
-
-if scratch_path.exists():
-    # for HPC
-    root_dir = scratch_path / "earth-mantle-surrogate"
-    print(root_dir)
-
-    path_input_folder = path_processed_data / "input"
-    path_truth_folder = path_processed_data / "truth"
-    path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
-    Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
-
-else:
-    
-    # for local compute
-    root_dir = Path.cwd()  # set the root directory as a Pathlib path
-    print(root_dir)
-
-    if Path(root_dir / "models/interim/checkpoints" / prev_checkpoint_folder_name).exists():
-        print('Previous checkpoints exist. Training from most recent checkpoint.')
-        
-        path_prev_checkpoint = root_dir / "models/interim/checkpoints" / prev_checkpoint_folder_name
-        # some code to load previous checkpoint ...
-    elif prev_checkpoint_folder_name == "dummy_folder_name":
-        pass
-    else:
-        print('Could not find previous checkpoint folder. Training from beginning.')
-
-
-    path_input_folder = path_processed_data / "input"
-    path_truth_folder = path_processed_data / "truth"
-    path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
-    Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
-
+GEN_PRETRAIN_EPOCHS = 80  # number of epochs to pretrain generator
 
 
 ########################################################
@@ -121,7 +59,105 @@ def plot_fake_truth(fake, x_truth):
 
     return fig
 
+
+def find_most_recent_checkpoint(path_prev_checkpoint):
+    """Finds the most recent checkpoint in a checkpoint folder
+    and returns the path to that .pt file.
+    """
+
+    ckpt_list = list(path_prev_checkpoint.rglob("*.pt"))
+    max_epoch = sorted(list(int(re.findall("[0-9]+", str(i))[-1]) for i in ckpt_list))[
+        -1
+    ]
+    return Path(path_prev_checkpoint / f"train_{max_epoch}.pt")
+
+
 #######################################################
+
+
+#######################################################
+# Set Directories
+#######################################################
+
+# check if "scratch" path exists in the home directory
+# if it does, assume we are on HPC
+scratch_path = Path.home() / "scratch"
+if scratch_path.exists():
+    print("Assume on HPC")
+else:
+    print("Assume on local compute")
+
+# parse arguments
+parser = argparse.ArgumentParser()
+
+parser.add_argument(dest="path_data", type=str, help="Path to processed data")
+
+parser.add_argument(
+    "-c",
+    "--checkpoint",
+    dest="ckpt_name",
+    type=str,
+    help="Name of chekpoint folder to load previous checkpoint from",
+)
+args = parser.parse_args()
+
+path_processed_data = Path(args.path_data)
+
+# if loading the model from a checkpoint, a checkpoint folder name
+# should be passed as an argument, like: -c 2021_07_14_185903
+# the various .pt files will be inside the checkpoint folder
+if args.ckpt_name:
+    prev_checkpoint_folder_name = args.ckpt_name
+    print("argparse works!", prev_checkpoint_folder_name)
+
+
+# set time
+model_start_time = datetime.datetime.now().strftime("%Y_%m_%d_%H%M%S")
+
+if scratch_path.exists():
+    # for HPC
+    root_dir = scratch_path / "earth-mantle-surrogate"
+    print(root_dir)
+
+    if args.ckpt_name:
+        path_prev_checkpoint = (
+            root_dir / "models/interim/checkpoints" / prev_checkpoint_folder_name
+        )
+        if Path(path_prev_checkpoint).exists():
+            print("Previous checkpoints exist. Training from most recent checkpoint.")
+
+            path_prev_checkpoint = find_most_recent_checkpoint(path_prev_checkpoint)
+
+        else:
+            print("Could not find previous checkpoint folder. Training from beginning.")
+
+    path_input_folder = path_processed_data / "input"
+    path_truth_folder = path_processed_data / "truth"
+    path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
+    Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
+
+else:
+
+    # for local compute
+    root_dir = Path.cwd()  # set the root directory as a Pathlib path
+    print(root_dir)
+
+    if args.ckpt_name:
+        path_prev_checkpoint = (
+            root_dir / "models/interim/checkpoints" / prev_checkpoint_folder_name
+        )
+        if Path(path_prev_checkpoint).exists():
+            print("Previous checkpoints exist. Training from most recent checkpoint.")
+
+            path_prev_checkpoint = find_most_recent_checkpoint(path_prev_checkpoint)
+
+        else:
+            print("Could not find previous checkpoint folder. Training from beginning.")
+
+    path_input_folder = path_processed_data / "input"
+    path_truth_folder = path_processed_data / "truth"
+    path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
+    Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
 
 
 earth_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
@@ -146,12 +182,7 @@ gen = Generator(
 ).to(device)
 
 critic = Discriminator(
-    in_chan=8, 
-    out_chan=8, 
-    scale_factor=8, 
-    chan_base=64, 
-    chan_min=64, 
-    chan_max=128
+    in_chan=8, out_chan=8, scale_factor=8, chan_base=64, chan_min=64, chan_max=128
 ).to(device)
 
 # initialize weights
@@ -215,7 +246,6 @@ for epoch in range(NUM_EPOCHS):
             gen.zero_grad()
             loss_gen.backward()
             opt_gen.step()
-
 
     with torch.no_grad():
         fake = gen(x_input)

@@ -60,7 +60,7 @@ endif
 ## Train the models
 train: requirements
 ifeq (True,$(HAS_CONDA)) # assume on local
-	python ./src/models/train_model.py ./data/processed 2021_07_14_185903
+	python ./src/models/train_model.py ./data/processed -c 2021_07_15_093623
 else # assume on HPC
 	sbatch make_hpc_data.sh $(PROJECT_DIR)
 endif
