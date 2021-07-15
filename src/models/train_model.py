@@ -35,7 +35,7 @@ GEN_PRETRAIN_EPOCHS = 5  # number of epochs to pretrain generator
 #######################################################
 
 
-def plot_fake_truth(fake, x_truth):
+def plot_fake_truth(fake, x_truth, epoch_i, batch_i):
     plt.switch_backend("agg")
     with torch.no_grad():
         fake = gen(x_input).cpu()
@@ -55,6 +55,7 @@ def plot_fake_truth(fake, x_truth):
             ax[1, i].pcolormesh(x_truth[bi, vi, ri, :, :].cpu(), cmap=color_scheme)
             ax[1, i].get_xaxis().set_visible(False)
             ax[1, i].get_yaxis().set_visible(False)
+        plt.suptitle(f'epoch {epoch_i}, batch_idx {batch_i}')
         plt.subplots_adjust(wspace=0, hspace=0)
 
     return fig
@@ -269,25 +270,48 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
             gen.zero_grad()
             loss_gen.backward()
             opt_gen.step()
+        if epoch > GEN_PRETRAIN_EPOCHS:
+            if batch_idx % 3 == 0:
 
-        if batch_idx % 10 == 0:
+                with torch.no_grad():
+                    gen.eval() # does this need to be included???
+                    fake = gen(x_input)
+                    fig = plot_fake_truth(fake, x_truth, epoch, batch_idx)
+                    writer_results.add_figure("Results", fig, global_step=step)
 
-            with torch.no_grad():
-                gen.eval() # does this need to be included???
-                fake = gen(x_input)
-                fig = plot_fake_truth(fake, x_truth)
-                writer_results.add_figure("Results", fig, global_step=step)
+                step += 1
 
-            step += 1
+                # save checkpoint
+                torch.save(
+                    {
+                        "gen": gen.state_dict(),
+                        "critic": critic.state_dict(),
+                        "opt_gen": opt_gen.state_dict(),
+                        "opt_critic": opt_critic.state_dict(),
+                        "epoch": epoch,
+                    },
+                    path_checkpoint_folder / f"train_{epoch}.pt",
+                )
+        else:
+            if batch_idx % 10 == 0:
 
-            # save checkpoint
-            torch.save(
-                {
-                    "gen": gen.state_dict(),
-                    "critic": critic.state_dict(),
-                    "opt_gen": opt_gen.state_dict(),
-                    "opt_critic": opt_critic.state_dict(),
-                    "epoch": epoch,
-                },
-                path_checkpoint_folder / f"train_{epoch}.pt",
-            )
+                with torch.no_grad():
+                    gen.eval() # does this need to be included???
+                    fake = gen(x_input)
+                    fig = plot_fake_truth(fake, x_truth, epoch, batch_idx)
+                    writer_results.add_figure("Results", fig, global_step=step)
+
+                step += 1
+
+                # save checkpoint
+                torch.save(
+                    {
+                        "gen": gen.state_dict(),
+                        "critic": critic.state_dict(),
+                        "opt_gen": opt_gen.state_dict(),
+                        "opt_critic": opt_critic.state_dict(),
+                        "epoch": epoch,
+                    },
+                    path_checkpoint_folder / f"train_{epoch}.pt",
+                )
+
