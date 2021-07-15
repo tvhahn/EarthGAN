@@ -23,11 +23,11 @@ from src.models.loss.wasserstein import gradient_penalty
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 1e-4
-NUM_EPOCHS = 2
+NUM_EPOCHS = 100
 BATCH_SIZE = 1
 CRITIC_ITERATIONS = 5
 LAMBDA_GP = 10
-GEN_PRETRAIN_EPOCHS = 80  # number of epochs to pretrain generator
+GEN_PRETRAIN_EPOCHS = 5  # number of epochs to pretrain generator
 
 
 ########################################################
@@ -270,22 +270,24 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
             loss_gen.backward()
             opt_gen.step()
 
-    with torch.no_grad():
-        gen.eval() # does this need to be included???
-        fake = gen(x_input)
-        fig = plot_fake_truth(fake, x_truth)
-        writer_results.add_figure("Results", fig, global_step=step)
+        if batch_idx % 10 == 0:
 
-    step += 1
+            with torch.no_grad():
+                gen.eval() # does this need to be included???
+                fake = gen(x_input)
+                fig = plot_fake_truth(fake, x_truth)
+                writer_results.add_figure("Results", fig, global_step=step)
 
-    # save checkpoint
-    torch.save(
-        {
-            "gen": gen.state_dict(),
-            "critic": critic.state_dict(),
-            "opt_gen": opt_gen.state_dict(),
-            "opt_critic": opt_critic.state_dict(),
-            "epoch": epoch,
-        },
-        path_checkpoint_folder / f"train_{epoch}.pt",
-    )
+            step += 1
+
+            # save checkpoint
+            torch.save(
+                {
+                    "gen": gen.state_dict(),
+                    "critic": critic.state_dict(),
+                    "opt_gen": opt_gen.state_dict(),
+                    "opt_critic": opt_critic.state_dict(),
+                    "epoch": epoch,
+                },
+                path_checkpoint_folder / f"train_{epoch}.pt",
+            )
