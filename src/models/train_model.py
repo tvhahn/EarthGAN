@@ -22,11 +22,11 @@ from src.models.loss.wasserstein import gradient_penalty
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 1e-4
-NUM_EPOCHS = 20
+NUM_EPOCHS = 2
 BATCH_SIZE = 1
 CRITIC_ITERATIONS = 5
 LAMBDA_GP = 10
-GEN_PRETRAIN_EPOCHS = 1  # number of epochs to pretrain generator
+GEN_PRETRAIN_EPOCHS = 5  # number of epochs to pretrain generator
 
 
 #######################################################
@@ -44,6 +44,17 @@ else:
 # path for processed data is an argument to running python file
 path_processed_data = Path(sys.argv[1])
 
+# if loading the model from a checkpoint, a checkpoint folder name
+# should be passed as an argument, like: 2021_07_14_185903
+# the various .pt files will be inside the checkpoint folder 
+# FUTURE-TO-DO: Use argparse
+try:
+    prev_checkpoint_folder_name = sys.argv[2]
+except:
+    # assume that not looking for previous checkpoint
+    prev_checkpoint_folder_name = "dummy_folder_name"
+    print("No checkpoint folder name passed. Training from beginning.") 
+
 # set time
 model_start_time = datetime.datetime.now().strftime("%Y_%m_%d_%H%M%S")
 
@@ -58,9 +69,21 @@ if scratch_path.exists():
     Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
 
 else:
+    
     # for local compute
-    root_dir = Path.cwd().parent.parent  # set the root directory as a Pathlib path
+    root_dir = Path.cwd()  # set the root directory as a Pathlib path
     print(root_dir)
+
+    if Path(root_dir / "models/interim/checkpoints" / prev_checkpoint_folder_name).exists():
+        print('Previous checkpoints exist. Training from most recent checkpoint.')
+        
+        path_prev_checkpoint = root_dir / "models/interim/checkpoints" / prev_checkpoint_folder_name
+        # some code to load previous checkpoint ...
+    elif prev_checkpoint_folder_name == "dummy_folder_name":
+        pass
+    else:
+        print('Could not find previous checkpoint folder. Training from beginning.')
+
 
     path_input_folder = path_processed_data / "input"
     path_truth_folder = path_processed_data / "truth"
