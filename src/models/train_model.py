@@ -51,7 +51,7 @@ def plot_fake_truth(fake, x_truth, epoch_i, batch_i):
             ax[0, i].pcolormesh(fake[bi, vi, ri, :, :].cpu(), cmap=color_scheme)
             ax[0, i].get_xaxis().set_visible(False)
             ax[0, i].get_yaxis().set_visible(False)
-            ax[0, i].title.set_text(f"v={vi}, r={ri}")
+            ax[0, i].set_title(f"v={vi}, r={ri}", fontsize=10)
             ax[1, i].pcolormesh(x_truth[bi, vi, ri, :, :].cpu(), cmap=color_scheme)
             ax[1, i].get_xaxis().set_visible(False)
             ax[1, i].get_yaxis().set_visible(False)

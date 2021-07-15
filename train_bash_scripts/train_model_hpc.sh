@@ -3,7 +3,7 @@
 #SBATCH --gres=gpu:1        # request GPU "generic resource"
 #SBATCH --cpus-per-task=7   # maximum CPU cores per GPU request: 6 on Cedar, 16 on Graham.
 #SBATCH --mem=32000M      # memory per node
-#SBATCH --time=0-01:20      # time (DD-HH:MM)
+#SBATCH --time=0-04:20      # time (DD-HH:MM)
 #SBATCH --output=%N-%j.out  # %N for node name, %j for jobID
 #SBATCH --mail-type=ALL               # Type of email notification- BEGIN,END,F$
 #SBATCH --mail-user=18tcvh@queensu.ca   # Email to which notifications will be $
@@ -24,4 +24,4 @@ cd
 tensorboard --logdir=scratch/earth-mantle-surrogate/models/interim/logs --host 0.0.0.0 &
 
 # begin training
-python $PROJECT_DIR/src/models/train_model.py $SLURM_TMPDIR/data/processed -c 2021_07_15_114841
+python $PROJECT_DIR/src/models/train_model.py $SLURM_TMPDIR/data/processed -c 2021_07_15_132341
