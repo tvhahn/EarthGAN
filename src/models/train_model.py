@@ -23,7 +23,7 @@ from src.models.loss.wasserstein import gradient_penalty
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 1e-4
-NUM_EPOCHS = 21
+NUM_EPOCHS = 2
 BATCH_SIZE = 1
 CRITIC_ITERATIONS = 5
 LAMBDA_GP = 10
@@ -109,6 +109,9 @@ path_processed_data = Path(args.path_data)
 if args.ckpt_name:
     prev_checkpoint_folder_name = args.ckpt_name
     print("argparse works!", prev_checkpoint_folder_name)
+else:
+    # set dummy name for path_prev_checkpoint
+    path_prev_checkpoint = Path('no_prev_checkpoint_needed')
 
 
 # set time
@@ -160,6 +163,10 @@ else:
     Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
 
 
+#######################################################
+# Prep Model and Data
+#######################################################
+
 earth_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
 
 loader = DataLoader(
@@ -193,11 +200,27 @@ critic.apply(init_weights)
 opt_gen = optim.Adam(gen.parameters(), lr=1e-4, betas=(0.0, 0.9))
 opt_critic = optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9))
 
-gen.train()
-critic.train()
+# load from checkpoint if wanted
+if path_prev_checkpoint.exists():
+    print('Loading from previous checkpoint')
+    checkpoint = torch.load(path_prev_checkpoint)
+    epoch_start = checkpoint['epoch']+1
+    gen.load_state_dict(checkpoint['gen'])
+    critic.load_state_dict(checkpoint['critic'])
+    opt_gen.load_state_dict(checkpoint['opt_gen'])
+    opt_critic.load_state_dict(checkpoint['opt_critic'])
+
+else:
+    epoch_start = 0
+
+#######################################################
+# Training Loop
+#######################################################
 
 step = 0
-for epoch in range(NUM_EPOCHS):
+for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
+    gen.train()
+    critic.train()
     print("epoch", epoch)
 
     for batch_idx, data in enumerate(loader):
@@ -248,6 +271,7 @@ for epoch in range(NUM_EPOCHS):
             opt_gen.step()
 
     with torch.no_grad():
+        gen.eval() # does this need to be included???
         fake = gen(x_input)
         fig = plot_fake_truth(fake, x_truth)
         writer_results.add_figure("Results", fig, global_step=step)
