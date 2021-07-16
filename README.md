@@ -1,9 +1,23 @@
-Earth Mantle Surrogate Modelling
+EarthGAN - Earth Mantle Surrogate Modeling
 ==============================
 
-Building a surrogate model for the Earth's mantle convection.
+Building a surrogate model of the Earth's mantle convection with a generative adversarial network.
 
-Progress updates, along with my thoughts, can be found in the [devlog](devlog/)
+Progress updates, along with my thoughts, can be found in the [devlog](devlog/).
+
+
+
+## Motivation
+
+
+
+## Recent Updates
+
+See version log for complete update list. See devlog for my running commentary.
+
+V-0.1 
+
+
 
 Project Organization
 ------------
