@@ -3,6 +3,8 @@ Earth Mantle Surrogate Modelling
 
 Building a surrogate model for the Earth's mantle convection.
 
+Progress updates, along with my thoughts, can be found in the [devlog](devlog/)
+
 Project Organization
 ------------
 
