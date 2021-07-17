@@ -315,3 +315,15 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
                     path_checkpoint_folder / f"train_{epoch}.pt",
                 )
 
+    # save checkpoint at end of epoch
+    torch.save(
+        {
+            "gen": gen.state_dict(),
+            "critic": critic.state_dict(),
+            "opt_gen": opt_gen.state_dict(),
+            "opt_critic": opt_critic.state_dict(),
+            "epoch": epoch,
+        },
+        path_checkpoint_folder / f"train_{epoch}.pt",
+    )
+
