@@ -4,6 +4,16 @@
 >
 > Posts are in descending order (newest to oldest).
 
+## July 17, 2021
+
+Training continues... slowly. And interestingly, the "stripes" seemed to show up again (see the picture below).
+
+![16_27](/home/tim/Documents/earth-mantle-surrogate/devlog/img/16_27.png)
+
+The stripes do seem to disappear after several mini-batches, as shown below in epoch 16, mini-batch 138. It appears that the appear, and then disappear, in an oscillating fashion.
+
+![16_138](/home/tim/Pictures/16_138.png)
+
 ## July 16, 2021
 
 The training has begun on the HPC! And watching TensorBoard is addictive.
@@ -32,7 +42,7 @@ And another one:
 
 ![13_144](./img/13_144.png)
 
-At some point during epoch 13, "stripes" started showing up (see the image below). I think(?) this is positive. Noise is injected into the convolutional layers of the generator. Perhaps, with time, the generator will use this additional noise, and the "stripes", to create sharper features.
+At some point, during epoch 13, "stripes" started showing up (see the image below). I think(?) this is positive. Noise is injected into the convolutional layers of the generator. Perhaps, with time, the generator will use this additional noise, and the "stripes", to create sharper features.
 
 ![13_246](./img/13_246.png)
 
