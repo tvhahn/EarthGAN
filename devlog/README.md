@@ -4,13 +4,19 @@
 >
 > Posts are in descending order (newest to oldest).
 
+## July 18, 2021
+
+The HPC was down for most of yesterday due to maintenance. Training is back up and running today though.
+
+Before I begin my next iteration of model training, I need to include the discriminator loss. It would be nice to see the trend, in TenorBoard, over time
+
 ## July 17, 2021
 
 Training continues... slowly. And interestingly, the "stripes" seemed to show up again (see the picture below).
 
 ![16_27](/home/tim/Documents/earth-mantle-surrogate/devlog/img/16_27.png)
 
-The stripes do seem to disappear after several mini-batches, as shown below in epoch 16, mini-batch 138. It appears that the appear, and then disappear, in an oscillating fashion.
+The stripes  disappear after several mini-batches, as shown below in epoch 16, mini-batch 138. The stripes seem to come-and-go in an oscillating fashion.
 
 ![16_138](/home/tim/Pictures/16_138.png)
 
