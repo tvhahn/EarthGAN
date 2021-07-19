@@ -4,11 +4,33 @@
 >
 > Posts are in descending order (newest to oldest).
 
-## July 18, 2021
+## July 19, 2021
 
-The HPC was down for most of yesterday due to maintenance. Training is back up and running today though.
+The HPC was down for most of the weekend due to maintenance. Training is back up and running today though.
 
-Before I begin my next iteration of model training, I need to include the discriminator loss. It would be nice to see the trend, in TenorBoard, over time
+Before I begin my next iteration of model training, I need to include the discriminator loss. It would be nice to see the trend, in TenorBoard, over time.
+
+### Results So Far
+
+Some radial slices produce better "fake" results than others. This is the case when there aren't as many sharp features, like the results below.
+
+![28_216](./img/28_216.png)
+
+However, the sharp features continue to be an issue:
+
+![28_174](./img/28_174.png)
+
+I'll be stopping the training soon, and then implement several changes (like only training on the temperature layer and measuring the WGAN-GP loss). Each "fake" results, even from the same input, is slightly different from each other due to the stochasticity of the noise injected into the generator. This creates perceptible line in the stitched together outputs -- see image below.
+
+![stitch_1](./img/stitch_1.png)
+
+I'm not too concerned with this, yet. An average across several samples would likely improve things, and final implementation may even involve some sort of super-sampling layer.
+
+### Stitching Together Results
+
+I've started work on stitching together several "slices". This is proving to be slightly more challenging than I thought (no surprise, again). 
+
+
 
 ## July 17, 2021
 
