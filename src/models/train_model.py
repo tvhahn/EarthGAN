@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import datetime
 import re
 import argparse
+import shutil
 
 
 from src.models.utils.create_batch import EarthDataTrain
@@ -163,6 +164,8 @@ else:
     path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
     Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
 
+# save src directory as a zip into the checkpoint folder
+shutil.make_archive(path_checkpoint_folder / f'src_files_{model_start_time}', 'zip', Path.cwd() / 'src')
 
 #######################################################
 # Prep Model and Data
