@@ -101,6 +101,15 @@ parser.add_argument(
     type=str,
     help="Name of chekpoint folder to load previous checkpoint from",
 )
+
+parser.add_argument(
+    "-p",
+    "--proj_dir",
+    dest="proj_dir",
+    type=str,
+    help="Location of project folder",
+)
+
 args = parser.parse_args()
 
 path_processed_data = Path(args.path_data)
@@ -110,10 +119,16 @@ path_processed_data = Path(args.path_data)
 # the various .pt files will be inside the checkpoint folder
 if args.ckpt_name:
     prev_checkpoint_folder_name = args.ckpt_name
-    print("argparse works!", prev_checkpoint_folder_name)
 else:
     # set dummy name for path_prev_checkpoint
     path_prev_checkpoint = Path('no_prev_checkpoint_needed')
+
+
+if args.proj_dir:
+    proj_dir = Path(args.proj_dir)
+else:
+    # proj_dir assumed to be cwd
+    proj_dir = Path.cwd()
 
 
 # set time
@@ -165,7 +180,7 @@ else:
     Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
 
 # save src directory as a zip into the checkpoint folder
-shutil.make_archive(path_checkpoint_folder / f'src_files_{model_start_time}', 'zip', Path.cwd() / 'src')
+shutil.make_archive(path_checkpoint_folder / f'src_files_{model_start_time}', 'zip', proj_dir / 'src')
 
 #######################################################
 # Prep Model and Data
