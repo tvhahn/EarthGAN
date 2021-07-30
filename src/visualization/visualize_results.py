@@ -205,11 +205,20 @@ def main():
     ).to(device)
 
     EPOCH_LOAD = 20
-    R_INDEX = 165
+    R_INDEX = 0
     VARIABLE_INDEX = 0
+    ITERATE_EPOCHS = False
 
     checkpoint = torch.load(checkpoint_file_dict[EPOCH_LOAD])
     gen.load_state_dict(checkpoint["gen"])
+
+    # save gen checkpoint to check size
+    torch.save(
+        {
+            "gen": gen.state_dict(),
+        },
+        path_save_loc / "gen.pt",
+    )
 
     input_data = torch.tensor(np.load(path_input_folder / "x_001.npy"))
     index_keep = np.round(
@@ -241,33 +250,34 @@ def main():
         dpi=150, final_roll=-35
     )
 
-    Path(path_save_loc / f"epoch_rindex{R_INDEX}").mkdir(parents=True, exist_ok=True)
-    Path(path_save_loc / f"epoch_rindex{R_INDEX}" / "moll").mkdir(parents=True, exist_ok=True)
-    path_epoch_iter = Path(path_save_loc / f"epoch_rindex{R_INDEX}")
+    if ITERATE_EPOCHS:
+        Path(path_save_loc / f"epoch_rindex{R_INDEX}").mkdir(parents=True, exist_ok=True)
+        Path(path_save_loc / f"epoch_rindex{R_INDEX}" / "moll").mkdir(parents=True, exist_ok=True)
+        path_epoch_iter = Path(path_save_loc / f"epoch_rindex{R_INDEX}")
 
-    for epoch in range(0,46):
-        checkpoint = torch.load(checkpoint_file_dict[epoch])
-        gen.load_state_dict(checkpoint["gen"])
+        for epoch in range(0,46):
+            checkpoint = torch.load(checkpoint_file_dict[epoch])
+            gen.load_state_dict(checkpoint["gen"])
 
-        x_comb = create_combined_map(
-            input_data,
-            gen,
-            device,
-            R_INDEX, VARIABLE_INDEX,
-            path_save_name=path_epoch_iter / "combined.png",
-            dpi=150,
-            final_roll=0,
-        )
+            x_comb = create_combined_map(
+                input_data,
+                gen,
+                device,
+                R_INDEX, VARIABLE_INDEX,
+                path_save_name=path_epoch_iter / "combined.png",
+                dpi=150,
+                final_roll=0,
+            )
 
 
-        create_truth_map(
-            truth_data,
-            x_comb,
-            R_INDEX, VARIABLE_INDEX, 
-            path_save_name1=path_epoch_iter / f"compare_epoch{epoch}_rindex{R_INDEX}.png",
-            path_save_name2=path_epoch_iter / "moll" / f"compare_epoch{epoch}_rindex{R_INDEX}_moll.png",
-            dpi=150, final_roll=-35
-        )
+            create_truth_map(
+                truth_data,
+                x_comb,
+                R_INDEX, VARIABLE_INDEX, 
+                path_save_name1=path_epoch_iter / f"compare_epoch{epoch}_rindex{R_INDEX}.png",
+                path_save_name2=path_epoch_iter / "moll" / f"compare_epoch{epoch}_rindex{R_INDEX}_moll.png",
+                dpi=150, final_roll=-35
+            )
 
 
 
