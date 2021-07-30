@@ -4,6 +4,14 @@
 >
 > Posts are in descending order (newest to oldest).
 
+
+
+## July 30, 2021
+
+Making visualizations for the submission to the IEEE SciVis contest. So much work, so little time...
+
+![line](./img/line.gif)
+
 ## July 19, 2021
 
 The HPC was down for most of the weekend due to maintenance. Training is back up and running today though.
