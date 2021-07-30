@@ -74,6 +74,11 @@ clean:
 test_environment:
 	$(PYTHON_INTERPRETER) test_environment.py
 
+
+## Make the figures of the results
+figures_results:
+	$(PYTHON_INTERPRETER) src/visualization/visualize_results.py
+
 #################################################################################
 # PROJECT RULES                                                                 #
 #################################################################################
