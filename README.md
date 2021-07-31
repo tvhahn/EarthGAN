@@ -5,7 +5,8 @@ Building a surrogate model of the Earth's mantle convection with a generative ad
 
 Progress updates, along with my thoughts, can be found in the [devlog](devlog/).
 
-
+See how good (or bad, lol) the GAN currently is! Open up the Colab notebook below:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tvhahn/EarthGAN/blob/master/notebooks/3.0_generate_fake_example.ipynb)
 
 ## Motivation
 
