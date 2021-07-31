@@ -6,7 +6,7 @@
 
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PROFILE = default
-PROJECT_NAME = earth-mantle-surrogate
+PROJECT_NAME = earthgan
 PYTHON_INTERPRETER = python3
 
 ifeq (,$(shell which conda))
@@ -51,33 +51,35 @@ endif
 ## Make Dataset
 data: requirements
 ifeq (True,$(HAS_CONDA)) # assume on local
-	bash make_local_data.sh $(PROJECT_DIR)
+	bash bash_scripts/make_local_data.sh $(PROJECT_DIR)
 else # assume on HPC
-	sbatch make_hpc_data.sh $(PROJECT_DIR)
+	sbatch bash_scripts/make_hpc_data.sh $(PROJECT_DIR)
 endif
 
 
 ## Train the models
 train:
 ifeq (True,$(HAS_CONDA)) # assume on local
-	bash train_bash_scripts/train_model_local.sh $(PROJECT_DIR)
+	bash bash_scripts/train_model_local.sh $(PROJECT_DIR)
 else # assume on HPC
-	sbatch train_bash_scripts/train_model_hpc.sh $(PROJECT_DIR)
+	sbatch bash_scripts/train_model_hpc.sh $(PROJECT_DIR)
 endif
 
-## Delete all compiled Python files
-clean:
-	find . -type f -name "*.py[co]" -delete
-	find . -type d -name "__pycache__" -delete
+
+## Make the figures of the results
+figures_results:
+	$(PYTHON_INTERPRETER) src/visualization/visualize_results.py
+
 
 ## Test python environment is setup correctly
 test_environment:
 	$(PYTHON_INTERPRETER) test_environment.py
 
 
-## Make the figures of the results
-figures_results:
-	$(PYTHON_INTERPRETER) src/visualization/visualize_results.py
+## Delete all compiled Python files
+clean:
+	find . -type f -name "*.py[co]" -delete
+	find . -type d -name "__pycache__" -delete
 
 #################################################################################
 # PROJECT RULES                                                                 #
