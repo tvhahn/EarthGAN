@@ -1,9 +1,9 @@
 EarthGAN - Earth Mantle Surrogate Modeling
 ==============================
 
-> Can a surrogate model of the [Earth’s Mantle Convection data set](https://scivis2021.netlify.app/data/) be built such that it can be readily run in a web-browser and produce high-fidelity    results? We're trying to do just that through the use of a generative adversarial network. We are in active research.
+> Can a surrogate model of the [Earth’s Mantle Convection data set](https://scivis2021.netlify.app/data/) be built such that it can be readily run in a web-browser and produce high-fidelity    results? We're trying to do just that through the use of a generative adversarial network -- we call ours EarthGAN. We are in active research.
 
-See how the GAN currently works! Open up the Colab notebook and generate some "fake" data: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tvhahn/EarthGAN/blob/master/notebooks/3.0_generate_fake_example.ipynb)
+See how EarthGAN currently works! Open up the Colab notebook and generate some "fake" data: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tvhahn/EarthGAN/blob/master/notebooks/3.0_generate_fake_example.ipynb)
 
 
 
@@ -13,11 +13,11 @@ See how the GAN currently works! Open up the Colab notebook and generate some "f
 
 Progress updates, along with my thoughts, can be found in the [devlog](devlog/).
 
-**This is active research.** If you have any thoughts, suggestions, or would like to collaborate, please reach out!
+**This is active research.** If you have any thoughts, suggestions, or would like to collaborate, please reach out! You can also post questions/ideas in the [discussions section](https://github.com/tvhahn/EarthGAN/discussions).
 
 ## Current Approach
 
-We're leveraging the excellent work of Li et al. who have implemented a GAN for creating [super-resolution cosmological simulations](https://www.pnas.org/content/118/19/e2022038118). The general method is in the [map2map](https://github.com/eelregit/map2map) their repository. We've used their GAN implementation. Please cite their work if you find it useful!
+We're leveraging the excellent work of Li et al. who have implemented a GAN for creating [super-resolution cosmological simulations](https://www.pnas.org/content/118/19/e2022038118). The general method is in their [map2map](https://github.com/eelregit/map2map) repository. We've used their GAN implementation as it works on 3D data. Please cite their work if you find it useful!
 
 The current approach is based on the [StyleGAN2](https://github.com/NVlabs/stylegan2) model. In addition, a conditional-GAN (cGAN) is used to produce results that are partially deterministic.
 
