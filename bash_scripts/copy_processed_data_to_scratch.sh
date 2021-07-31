@@ -1,8 +1,8 @@
 #!/bin/bash
-DIR="~/scratch/earth-mantle-surrogate"
+DIR="~/scratch/EarthGAN"
 if [ ! -d "$DIR" ]; then
-    echo "earth-mantle-surrogate folder in scratch not exist"
-    mkdir ~/scratch/earth-mantle-surrogate
+    echo "EarthGAN folder in scratch not exist"
+    mkdir ~/scratch/EarthGAN
 fi
 
-cp -r ./data/processed ~/scratch/earth-mantle-surrogate
+cp -r ./data/processed ~/scratch/EarthGAN

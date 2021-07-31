@@ -129,9 +129,9 @@ def create_truth_map(
     plt.close()
 
     # create mollweide representation
-    fig, ax = plt.subplots(2, 1, figsize=(18, 16))
-    ax[0] = plt.subplot(211, projection="mollweide")
-    ax[1] = plt.subplot(212, projection="mollweide")
+    fig, ax = plt.subplots(1, 2, figsize=(18, 16))
+    ax[0] = plt.subplot(121, projection="mollweide")
+    ax[1] = plt.subplot(122, projection="mollweide")
     # ax[1] = plt.subplot(111, projection="mollweide")
 
     lon = np.linspace(-np.pi, np.pi, 216)
@@ -190,8 +190,8 @@ def main():
         cat_noise=True,
     ).to(device)
 
-    EPOCH_LOAD = 20
-    R_INDEX = 100
+    EPOCH_LOAD = 36
+    R_INDEX = 165
     VARIABLE_INDEX = 0
     ITERATE_EPOCHS = True
 
