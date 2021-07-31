@@ -1,7 +1,7 @@
 EarthGAN - Earth Mantle Surrogate Modeling
 ==============================
 
-> Can a surrogate model of the [Earth’s Mantle Convection data set](https://scivis2021.netlify.app/data/) be built such that it can be readily run in a web-browser and produce high-fidelity    results? We're trying to do just that through the use of a generative adversarial network.
+> Can a surrogate model of the [Earth’s Mantle Convection data set](https://scivis2021.netlify.app/data/) be built such that it can be readily run in a web-browser and produce high-fidelity    results? We're trying to do just that through the use of a generative adversarial network. We are in active research.
 
 See how the GAN currently works! Open up the Colab notebook and generate some "fake" data: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tvhahn/EarthGAN/blob/master/notebooks/3.0_generate_fake_example.ipynb)
 
@@ -13,7 +13,7 @@ See how the GAN currently works! Open up the Colab notebook and generate some "f
 
 Progress updates, along with my thoughts, can be found in the [devlog](devlog/).
 
-**This is very much active research.** If you have any thoughts, suggestions, or would like to collaborate, please reach out!
+**This is active research.** If you have any thoughts, suggestions, or would like to collaborate, please reach out!
 
 ## Current Approach
 
