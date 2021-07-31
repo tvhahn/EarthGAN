@@ -1,23 +1,9 @@
-from math import log2
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-from torch.utils.data import DataLoader
 from pathlib import Path
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-import datetime
-import re
-import argparse
 import numpy as np
-
-
-from src.models.utils.create_batch import EarthDataTrain
-from src.models.model.model import Generator, Discriminator, init_weights
-from src.models.loss.wasserstein import gradient_penalty
+from src.models.model.model import Generator
 import logging
-import seaborn as sns
 import warnings
 warnings.filterwarnings("ignore")
 
