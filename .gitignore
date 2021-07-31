@@ -90,3 +90,12 @@ target/
 
 # Mypy cache
 .mypy_cache/
+
+
+# other
+reports/figures/epoch20_rindex32/
+reports/figures/epoch_rindex0/
+reports/figures/epoch_rindex100/
+reports/figures/epoch_rindex165/
+reports/figures/gen.pt
+notebooks/scratch/timestep0_r160.gif
