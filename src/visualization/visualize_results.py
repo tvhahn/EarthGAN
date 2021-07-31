@@ -205,20 +205,20 @@ def main():
     ).to(device)
 
     EPOCH_LOAD = 20
-    R_INDEX = 0
+    R_INDEX = 100
     VARIABLE_INDEX = 0
-    ITERATE_EPOCHS = False
+    ITERATE_EPOCHS = True
 
     checkpoint = torch.load(checkpoint_file_dict[EPOCH_LOAD])
     gen.load_state_dict(checkpoint["gen"])
 
     # save gen checkpoint to check size
-    torch.save(
-        {
-            "gen": gen.state_dict(),
-        },
-        path_save_loc / "gen.pt",
-    )
+    # torch.save(
+    #     {
+    #         "gen": gen.state_dict(),
+    #     },
+    #     path_save_loc / "gen.pt",
+    # )
 
     input_data = torch.tensor(np.load(path_input_folder / "x_001.npy"))
     index_keep = np.round(
