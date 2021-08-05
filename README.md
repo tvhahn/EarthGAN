@@ -73,9 +73,13 @@ To reproduce data pipeline and begin training: *
 Project Organization
 ------------
 
-    ├── LICENSE
     ├── Makefile           <- Makefile with commands like `make data` or `make train`
-    ├── README.md          <- README describing project.
+    │
+    ├── bash_scripts	   <- Bash scripts used in for training models or setting up environment
+    │   ├── train_model_hpc.sh       <- Bash/SLURM script used to train models on HPC (you will need to 
+    │   │ 								modify this to work on your HPC). Called on with `make train`
+    │   └── train_model_local.sh     <- Bash script used to train models locally. Called on with `make train`
+    │
     ├── data
     │   ├── interim        <- Intermediate data before we've applied any scaling.
     │   ├── processed      <- The final, canonical data sets for modeling.
@@ -104,16 +108,21 @@ Project Organization
     │   ├── __init__.py    <- Makes src a Python module
     │   │
     │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
-    │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
+    │   │   ├── make_dataset.py			<- Script for making downsampled data from the original
+    │   │   ├── data_prep_utils.py		<- Misc functions used in data prep
+    │   │   ├── download.sh				<- Bash script to download entire Earth Mantle data set
+    │   │   │  							   (used when `make data` called)
+    │   │   └──download.sh				<- Bash script to extract all Earth Mantle data set files
+    │   │    							   from zip (used when `make extract` called)								   
     │   │
     │   ├── models         <- Scripts to train models and then use trained models to make
     │   │   │                 predictions
-    │   │   ├── predict_model.py
+    │   │   │
     │   │   └── train_model.py
     │   │
     │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
     │       └── visualize.py
+    │
+    ├── LICENSE
+    └── README.md          <- README describing project.
 
