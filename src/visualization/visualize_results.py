@@ -118,7 +118,7 @@ def create_truth_map(
     ax[0].get_yaxis().set_visible(False)
     ax[0].set_aspect(1)
 
-    ax[1].set_title("Fake", fontsize=16)
+    ax[1].set_title("Generated", fontsize=16)
     ax[1].pcolormesh(fake[0, v, r_index, :, :], cmap=color_scheme)
     ax[1].get_xaxis().set_visible(False)
     ax[1].get_yaxis().set_visible(False)
@@ -144,7 +144,7 @@ def create_truth_map(
     ax[0].get_yaxis().set_visible(False)
     # ax[0].set_aspect(1)
 
-    ax[1].set_title("Fake", fontsize=16)
+    ax[1].set_title("Generated", fontsize=16)
     ax[1].pcolormesh(Lon, Lat, fake[0, 0, r_index, :, :], cmap=color_scheme)
     ax[1].get_xaxis().set_visible(False)
     ax[1].get_yaxis().set_visible(False)

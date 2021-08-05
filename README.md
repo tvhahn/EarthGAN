@@ -3,7 +3,7 @@ EarthGAN - Earth Mantle Surrogate Modeling
 
 > Can a surrogate model of the [Earth’s Mantle Convection data set](https://scivis2021.netlify.app/data/) be built such that it can be readily run in a web-browser and produce high-fidelity    results? We're trying to do just that through the use of a generative adversarial network -- we call ours EarthGAN. We are in active research.
 
-See how EarthGAN currently works! Open up the Colab notebook and generate some "fake" data: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tvhahn/EarthGAN/blob/master/notebooks/3.0_generate_fake_example.ipynb)
+See how EarthGAN currently works! Open up the Colab notebook and create results from the preliminary generator: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tvhahn/EarthGAN/blob/master/notebooks/3.0_generate_fake_example.ipynb)
 
 
 
@@ -82,19 +82,22 @@ Project Organization
     │   └── raw            <- Original data from Earth Mantle Convection simulation.
     │
     ├── models             <- Trained and serialized models, model predictions, or model summaries
-    │   └── figures        <- Generated graphics and figures to be used in reporting
+    │   └── interim        <- Interim models and summaries
+    │   └── final          <- Final, cononical models
     │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-jqp-initial-data-exploration`.
+    ├── notebooks          <- Jupyter notebooks. Generally used for explaining various components
+    │   │                     of the code base.
+    │   └── scratch        <- Rough-draft notebooks, of questionable quality. Be warned!
     │
     ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
     │
     ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
     │   └── figures        <- Generated graphics and figures to be used in reporting
     │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-    │                         generated with `pip freeze > requirements.txt`
+    ├── requirements.txt   <- Recommend using `make create_environment`. However, can use this file
+    │                         for to recreate environment with pip
+    ├── envearth.yml       <- Used to create conda environment. Use `make create_environment` when
+    │                         on local compute				
     │
     ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
     ├── src                <- Source code for use in this project.
