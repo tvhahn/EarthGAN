@@ -188,7 +188,18 @@ shutil.make_archive(path_checkpoint_folder / f'src_files_{model_start_time}', 'z
 # Prep Model and Data
 #######################################################
 
+# initialize Horovod
+hvd.init()
+
+# pin GPU to be used to process local rank (one GPU per process)
+torch.cuda.set_device(hvd.local_rank())
+
 earth_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
+
+# Partition dataset among workers using DistributedSampler
+train_sampler = torch.utils.data.distributed.DistributedSampler(
+    earth_dataset, num_replicas=hvd.size(), rank=hvd.rank())
+
 
 loader = DataLoader(
     earth_dataset,
