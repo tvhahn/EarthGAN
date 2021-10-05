@@ -6,6 +6,7 @@ import torch.optim as optim
 import torchvision
 from torch.utils.tensorboard import SummaryWriter  # print to tensorboard
 from torch.utils.data import DataLoader
+import torch.utils.data.distributed
 from pathlib import Path
 import matplotlib.pyplot as plt
 import datetime

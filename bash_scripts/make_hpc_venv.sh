@@ -13,6 +13,7 @@ pip install --no-index h5netcdf==0.7.4 matplotlib==3.3.4
 pip install --no-index pandas matplotlib seaborn
 pip install --no-index torch jupyterlab click opencv_python tensorboard torchvision
 pip install python-dotenv
+HOROVOD_WITH_PYTORCH=1 pip install --no-index install horovod[pytorch]
 
 # create bash script for opening jupyter notebooks https://stackoverflow.com/a/4879146/9214620
 cat << EOF >$VIRTUAL_ENV/bin/notebook.sh
