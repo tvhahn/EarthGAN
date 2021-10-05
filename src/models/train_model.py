@@ -13,6 +13,7 @@ import datetime
 import re
 import argparse
 import shutil
+import horovod.torch as hvd
 
 
 from src.models.utils.create_batch import EarthDataTrain
