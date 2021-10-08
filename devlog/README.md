@@ -6,6 +6,15 @@
 
 
 
+## October 8, 2021
+
+It's been a while since I last posted! I've been on holidays and have been moving, so other things have taken some priority. However, now I've tried to get multi-GPU training going. Turns out, it's difficult to use Horovod on the HPC (some sort of dependency hell and I don't want to use Docker/Singularity yet). I'll ask some experts to see if they have any idea. Instead, I've decided to go ahead with PyTorch's [DistributedDataParallel](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#comparison-between-dataparallel-and-distributeddataparallel). Wish me luck!
+
+![dependency_hell](./img/dependency_hell.png)
+
+
+
+
 ## July 30, 2021
 
 Making visualizations for the submission to the IEEE SciVis contest. So much work, so little time...
