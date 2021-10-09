@@ -202,14 +202,14 @@ gen = Generator(
     in_chan=4,
     out_chan=4,
     scale_factor=8,
-    chan_base=64,
+    chan_base=128,
     chan_min=64,
-    chan_max=128,
+    chan_max=512,
     cat_noise=True,
 ).to(device)
 
 critic = Discriminator(
-    in_chan=8, out_chan=8, scale_factor=8, chan_base=64, chan_min=64, chan_max=128
+    in_chan=8, out_chan=8, scale_factor=8, chan_base=512, chan_min=64, chan_max=512
 ).to(device)
 
 # initialize weights
