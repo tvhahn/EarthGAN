@@ -4,7 +4,10 @@
 >
 > Posts are in descending order (newest to oldest).
 
+## October 11, 2021
+Over the weekend I tried training with slightly larger models. However, the GPUs always maxed out on memory (16 GB VRAM max). So, I've begun training on only one variable at a time. Let's see how this goes....
 
+![new training only on one variable](./img/2021-10-11 08-34-17.png)
 
 ## October 8, 2021
 
