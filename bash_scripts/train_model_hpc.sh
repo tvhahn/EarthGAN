@@ -24,4 +24,4 @@ cd
 tensorboard --logdir=scratch/earth-mantle-surrogate/models/interim/logs --samples_per_plugin images=100 --host 0.0.0.0 &
 
 # begin training
-python $PROJECT_DIR/src/models/train_model.py $SLURM_TMPDIR/data/processed -c 2021_10_08_153138 --proj_dir $PROJECT_DIR
+python $PROJECT_DIR/src/models/train_model.py $SLURM_TMPDIR/data/processed --proj_dir $PROJECT_DIR

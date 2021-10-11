@@ -125,7 +125,7 @@ class EarthDataTrain(Dataset):
         # samples in truth/input folders stored as (# samples, # variables, Radial, Height, Width)
         # need to remove the # samples --> since each sample in folder has # samples = 1, we can
         # select it only
-        sample = {'truth': truth_data[0,0,:,:,:], 'input': input_data[0,0,:,:,:], 'upsampled': up_data[0,0,:,:,:]}
+        sample = {'truth': torch.unsqueeze(truth_data[0,0,:,:,:],0), 'input': torch.unsqueeze(input_data[0,0,:,:,:],0), 'upsampled': torch.unsqueeze(up_data[0,0,:,:,:],0)}
              
         return sample
     
