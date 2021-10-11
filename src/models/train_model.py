@@ -199,17 +199,17 @@ loader = DataLoader(
 writer_results = SummaryWriter(root_dir / "models/interim/logs/" / model_start_time)
 
 gen = Generator(
-    in_chan=4,
-    out_chan=4,
+    in_chan=1,
+    out_chan=1,
     scale_factor=8,
     chan_base=128,
-    chan_min=64,
+    chan_min=128,
     chan_max=512,
     cat_noise=True,
 ).to(device)
 
 critic = Discriminator(
-    in_chan=8, out_chan=8, scale_factor=8, chan_base=512, chan_min=64, chan_max=512
+    in_chan=2, out_chan=2, scale_factor=8, chan_base=512, chan_min=128, chan_max=512
 ).to(device)
 
 # initialize weights
