@@ -50,6 +50,7 @@ class EarthDataTrain(Dataset):
         unique_steps_input = set(
             re.findall("[0-9]+", str(i))[-1] for i in file_list_input
         )
+        
         check_1 = unique_steps_input.difference(self.time_step_list)
         check_2 = set(self.time_step_list).difference(unique_steps_input)
 
@@ -119,9 +120,13 @@ class EarthDataTrain(Dataset):
             roll_n = 0
 
         input_data = torch.roll(input_data, roll_n, 4)  # roll if used
+
+        # select first N points for width
         input_data = input_data[
             :, :, :, :, : self.gen_input_width
-        ]  # select first N points for width
+        ]  
+
+
         input_data = pad_data(
             input_data, pad_top_bot=3, pad_sides=0
         )  # hardcoded -- could make flexible in future
