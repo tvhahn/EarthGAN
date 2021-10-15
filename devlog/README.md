@@ -4,6 +4,17 @@
 >
 > Posts are in descending order (newest to oldest).
 
+## October 15, 2021
+Training is slow, but perhaps I'm seeing progress? Really, I have to ge the multi-GPU working.
+
+Here are some samples from TensorBoard:
+
+![sample training](./img/2021-10-15 09-29-00.png)
+
+![sample training 2](./img/2021-10-15 09-30-48.png)
+
+I've also been doing some research on how noise is used in StyleGAN2. Understanding this better should help me tune the model. Add it to the list.
+
 ## October 11, 2021
 Over the weekend I tried training with slightly larger models. However, the GPUs always maxed out on memory (16 GB VRAM max). So, I've begun training on only one variable at a time. Let's see how this goes....
 
