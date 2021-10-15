@@ -205,7 +205,7 @@ gen = Generator(
     chan_base=128,
     chan_min=64,
     chan_max=512,
-    cat_noise=False,
+    cat_noise=True,
 ).to(device)
 
 critic = Discriminator(
