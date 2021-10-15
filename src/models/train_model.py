@@ -39,6 +39,7 @@ GEN_PRETRAIN_EPOCHS = 5  # number of epochs to pretrain generator
 
 def plot_fake_truth(fake, x_truth, epoch_i, batch_i):
     plt.switch_backend("agg")
+    
     with torch.no_grad():
         fake = gen(x_input).cpu()
         x_truth = x_truth.cpu()
