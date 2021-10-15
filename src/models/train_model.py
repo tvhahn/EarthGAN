@@ -37,7 +37,7 @@ GEN_PRETRAIN_EPOCHS = 5  # number of epochs to pretrain generator
 #######################################################
 
 
-def plot_fake_truth(fake, x_truth, epoch_i, batch_i):
+def plot_fake_truth(fake, x_truth, x_up, epoch_i, batch_i):
     plt.switch_backend("agg")
     
     with torch.no_grad():
@@ -45,7 +45,7 @@ def plot_fake_truth(fake, x_truth, epoch_i, batch_i):
         x_truth = x_truth.cpu()
         color_scheme = "inferno"
         no_col = 10
-        fig, ax = plt.subplots(2, no_col, figsize=(12, 6))
+        fig, ax = plt.subplots(3, no_col, figsize=(12, 9))
         b, v, r, h, w = fake.shape
         for i in range(no_col):
             bi = torch.randint(b, (1,)).item()
@@ -55,10 +55,13 @@ def plot_fake_truth(fake, x_truth, epoch_i, batch_i):
             ax[0, i].get_xaxis().set_visible(False)
             ax[0, i].get_yaxis().set_visible(False)
             ax[0, i].set_title(f"v={vi}, r={ri}", fontsize=10)
-            ax[1, i].pcolormesh(x_truth[bi, vi, ri, :, :].cpu(), cmap=color_scheme)
+            ax[1, i].pcolormesh(x_up[bi, vi, ri, :, :].cpu(), cmap=color_scheme)
             ax[1, i].get_xaxis().set_visible(False)
             ax[1, i].get_yaxis().set_visible(False)
-        plt.suptitle(f'epoch {epoch_i}, batch_idx {batch_i}')
+            ax[2, i].pcolormesh(x_truth[bi, vi, ri, :, :].cpu(), cmap=color_scheme)
+            ax[2, i].get_xaxis().set_visible(False)
+            ax[2, i].get_yaxis().set_visible(False)
+        plt.suptitle(f'Epoch {epoch_i}, Batch Index {batch_i}')
         plt.subplots_adjust(wspace=0, hspace=0)
 
     return fig
@@ -296,7 +299,7 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
                 with torch.no_grad():
                     gen.eval() # does this need to be included???
                     fake = gen(x_input)
-                    fig = plot_fake_truth(fake, x_truth, epoch, batch_idx)
+                    fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
                     writer_results.add_figure("Results", fig, global_step=step)
 
                 step += 1
@@ -318,7 +321,7 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
                 with torch.no_grad():
                     gen.eval() # does this need to be included???
                     fake = gen(x_input)
-                    fig = plot_fake_truth(fake, x_truth, epoch, batch_idx)
+                    fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
                     writer_results.add_figure("Results", fig, global_step=step)
 
                 step += 1
