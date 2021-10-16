@@ -24,4 +24,4 @@ cp -r ~/scratch/earth-mantle-surrogate/processed $SLURM_TMPDIR/data
 # tensorboard --logdir=scratch/earth-mantle-surrogate/models/interim/logs --samples_per_plugin images=250 --host 0.0.0.0 &
 
 # begin training
-python $PROJECT_DIR/src/models/train_model.py $SLURM_TMPDIR/data/processed --proj_dir $PROJECT_DIR
+python $PROJECT_DIR/src/models/train_model.py $SLURM_TMPDIR/data/processed -c 2021_10_15_000633 --proj_dir $PROJECT_DIR
