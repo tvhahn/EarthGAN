@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=rrg-mechefsk
 #SBATCH --gres=gpu:v100:1        # request GPU "generic resource"
-#SBATCH --cpus-per-task=4   # maximum CPU cores per GPU request: 6 on Cedar, 16 on Graham.
+#SBATCH --cpus-per-task=5   # maximum CPU cores per GPU request: 6 on Cedar, 16 on Graham.
 #SBATCH --mem=14000M      # memory per node
 #SBATCH --time=0-23:50      # time (DD-HH:MM)
 #SBATCH --output=%N-%j.out  # %N for node name, %j for jobID
@@ -20,8 +20,8 @@ mkdir $SLURM_TMPDIR/data
 cp -r ~/scratch/earth-mantle-surrogate/processed $SLURM_TMPDIR/data
 
 # load tensorboard
-# cd
-# tensorboard --logdir=scratch/earth-mantle-surrogate/models/interim/logs --samples_per_plugin images=250 --host 0.0.0.0 &
+cd
+tensorboard --logdir=scratch/earth-mantle-surrogate/models/interim/logs --samples_per_plugin images=250 --host 0.0.0.0 &
 
 # begin training
-python $PROJECT_DIR/src/models/train_model.py $SLURM_TMPDIR/data/processed -c 2021_10_15_000633 --proj_dir $PROJECT_DIR
+python $PROJECT_DIR/src/models/train_model.py $SLURM_TMPDIR/data/processed -c 2021_10_17_122956 --proj_dir $PROJECT_DIR

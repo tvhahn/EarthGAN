@@ -25,7 +25,7 @@ from src.models.loss.wasserstein import gradient_penalty
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 1e-4
-NUM_EPOCHS = 100
+NUM_EPOCHS = 500
 BATCH_SIZE = 1
 CRITIC_ITERATIONS = 5
 LAMBDA_GP = 10
@@ -209,7 +209,7 @@ gen = Generator(
     chan_base=128,
     chan_min=64,
     chan_max=512,
-    cat_noise=True,
+    cat_noise=False,
 ).to(device)
 
 critic = Discriminator(
