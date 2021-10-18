@@ -26,7 +26,7 @@ ifeq (True,$(HAS_CONDA)) # assume on local
 	conda env create -f envearth.yml
 else # assume on HPC
 	@echo ">>> No Conda detected. Assume on HPC. Creating venv with Jupyter Lab functionality."
-	bash make_hpc_venv.sh $(PROJECT_DIR)
+	bash bash_scripts/make_hpc_venv.sh $(PROJECT_DIR)
 	@echo ">>> venv created. Activate with source ~/earth/bin/activate"
 endif
 
