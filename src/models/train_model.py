@@ -20,13 +20,58 @@ from src.models.model.model import Generator, Discriminator, init_weights
 from src.models.loss.wasserstein import gradient_penalty
 
 #######################################################
+# Argparse
+#######################################################
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument(
+    "--path_data",
+    dest="path_data", 
+    type=str, 
+    help="Path to processed data")
+
+parser.add_argument(
+    "-c",
+    "--checkpoint",
+    dest="ckpt_name",
+    type=str,
+    help="Name of chekpoint folder to load previous checkpoint from",
+)
+
+parser.add_argument(
+    "-p",
+    "--proj_dir",
+    dest="proj_dir",
+    type=str,
+    help="Location of project folder",
+)
+
+parser.add_argument(
+    "--batch_size",
+    dest="batch_size",
+    type=int,
+    default=1,
+    help="Mini-batch size for each GPU",
+)
+
+parser.add_argument(
+    '--cat_noise', 
+    action='store_true', 
+    help="Will concatenate noise if argument used (sets cat_noise=True)."
+)
+
+args = parser.parse_args()
+
+
+#######################################################
 # Set Hyperparameters
 #######################################################
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 1e-4
 NUM_EPOCHS = 500
-BATCH_SIZE = 1
+BATCH_SIZE = args.batch_size
 CRITIC_ITERATIONS = 5
 LAMBDA_GP = 10
 GEN_PRETRAIN_EPOCHS = 5  # number of epochs to pretrain generator
@@ -80,9 +125,6 @@ def find_most_recent_checkpoint(path_prev_checkpoint):
 
 
 #######################################################
-
-
-#######################################################
 # Set Directories
 #######################################################
 
@@ -94,28 +136,6 @@ if scratch_path.exists():
 else:
     print("Assume on local compute")
 
-# parse arguments
-parser = argparse.ArgumentParser()
-
-parser.add_argument(dest="path_data", type=str, help="Path to processed data")
-
-parser.add_argument(
-    "-c",
-    "--checkpoint",
-    dest="ckpt_name",
-    type=str,
-    help="Name of chekpoint folder to load previous checkpoint from",
-)
-
-parser.add_argument(
-    "-p",
-    "--proj_dir",
-    dest="proj_dir",
-    type=str,
-    help="Location of project folder",
-)
-
-args = parser.parse_args()
 
 path_processed_data = Path(args.path_data)
 
@@ -209,7 +229,7 @@ gen = Generator(
     chan_base=128,
     chan_min=64,
     chan_max=512,
-    cat_noise=False,
+    cat_noise=args.cat_noise,
 ).to(device)
 
 critic = Discriminator(
