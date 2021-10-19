@@ -20,8 +20,8 @@ mkdir $SLURM_TMPDIR/data
 cp -r ~/scratch/earth-mantle-surrogate/processed $SLURM_TMPDIR/data
 
 # load tensorboard
-cd
-tensorboard --logdir=scratch/earth-mantle-surrogate/models/interim/logs --samples_per_plugin images=250 --host 0.0.0.0 &
+# cd
+# tensorboard --logdir=scratch/earth-mantle-surrogate/models/interim/logs --samples_per_plugin images=250 --host 0.0.0.0 &
 
 # begin training
-python $PROJECT_DIR/src/models/train_model.py $SLURM_TMPDIR/data/processed -c 2021_10_17_122956 --proj_dir $PROJECT_DIR
+python $PROJECT_DIR/src/models/train_model.py $SLURM_TMPDIR/data/processed -c 2021_10_18_105040 --proj_dir $PROJECT_DIR
