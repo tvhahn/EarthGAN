@@ -3,7 +3,7 @@
 #SBATCH --gres=gpu:v100:1        # request GPU "generic resource"
 #SBATCH --cpus-per-task=4   # maximum CPU cores per GPU request: 6 on Cedar, 16 on Graham.
 #SBATCH --mem=14000M      # memory per node
-#SBATCH --time=0-8:50      # time (DD-HH:MM)
+#SBATCH --time=0-23:50      # time (DD-HH:MM)
 #SBATCH --output=%N-%j.out  # %N for node name, %j for jobID
 #SBATCH --mail-type=ALL               # Type of email notification- BEGIN,END,F$
 #SBATCH --mail-user=18tcvh@queensu.ca   # Email to which notifications will be $
@@ -26,7 +26,7 @@ cp -r ~/scratch/earth-mantle-surrogate/processed $SLURM_TMPDIR/data
 # begin training
 python $PROJECT_DIR/src/models/train_model.py \
     --path_data $SLURM_TMPDIR/data/processed \
-    --checkpoint 2021_10_19_141254 \
+    --checkpoint 2021_10_20_145017 \
     --proj_dir $PROJECT_DIR \
     --batch_size 1 \
     # --cat_noise
