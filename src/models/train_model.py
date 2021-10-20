@@ -6,7 +6,7 @@ import torch.optim as optim
 import torchvision
 from torch.utils.tensorboard import SummaryWriter  # print to tensorboard
 from torch.utils.data import DataLoader
-import torch.utils.data.distributed
+import horovod.torch as hvd
 from pathlib import Path
 import matplotlib.pyplot as plt
 import datetime
@@ -68,7 +68,10 @@ args = parser.parse_args()
 # Set Hyperparameters
 #######################################################
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+# device = "cuda" if torch.cuda.is_available() else "cpu"
+
+torch.cuda.set_device(hvd.local_rank())
+
 LEARNING_RATE = 1e-4
 NUM_EPOCHS = 500
 BATCH_SIZE = args.batch_size
@@ -211,12 +214,17 @@ shutil.make_archive(path_checkpoint_folder / f'src_files_{model_start_time}', 'z
 # Prep Model and Data
 #######################################################
 
+# define data set
 earth_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
+
+# partition data set among workers using DistributedSampler
+train_sampler = torch.utils.data.distributed.DistributedSampler(earth_dataset, num_replicas=hvd.size(), rank=hvd.rank())
 
 loader = DataLoader(
     earth_dataset,
     batch_size=BATCH_SIZE,
-    shuffle=True,
+    shuffle=True, 
+    sampler=train_sampler
 )
 
 # set summary writer for Tensorboard
@@ -230,11 +238,15 @@ gen = Generator(
     chan_min=64,
     chan_max=512,
     cat_noise=args.cat_noise,
-).to(device)
+)
+gen.cuda()
+
 
 critic = Discriminator(
     in_chan=2, out_chan=2, scale_factor=8, chan_base=512, chan_min=64, chan_max=512
-).to(device)
+)
+
+critic.cuda()
 
 # initialize weights
 gen.apply(init_weights)
