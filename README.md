@@ -77,7 +77,7 @@ Project Organization
     │
     ├── bash_scripts	   <- Bash scripts used in for training models or setting up environment
     │   ├── train_model_hpc.sh       <- Bash/SLURM script used to train models on HPC (you will need to 
-    │   │ 								modify this to work on your HPC). Called on with `make train`
+    │   │ 							modify this to work on your HPC). Called with `make train`
     │   └── train_model_local.sh     <- Bash script used to train models locally. Called on with `make train`
     │
     ├── data
