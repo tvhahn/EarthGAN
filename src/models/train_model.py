@@ -252,9 +252,13 @@ critic.cuda()
 gen.apply(init_weights)
 critic.apply(init_weights)
 
-# initializate optimizer
-opt_gen = optim.Adam(gen.parameters(), lr=1e-4, betas=(0.0, 0.9))
-opt_critic = optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9))
+# initializate optimizer, along with Horovod distributed optimizer
+opt_gen = hvd.DistributedOptimizer(optim.Adam(gen.parameters(), lr=1e-4, betas=(0.0, 0.9)), named_parameters=gen.named_parameters())
+opt_critic = hvd.DistributedOptimizer(optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9)), named_parameters=critic.named_parameters())
+
+# broadcast parameters from rank 0 to all other processes.
+hvd.broadcast_parameters(gen.state_dict(), root_rank=0)
+hvd.broadcast_parameters(critic.state_dict(), root_rank=0)
 
 # load from checkpoint if wanted
 if path_prev_checkpoint.exists():
