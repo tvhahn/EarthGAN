@@ -70,6 +70,8 @@ args = parser.parse_args()
 
 # device = "cuda" if torch.cuda.is_available() else "cpu"
 
+# initialize Horovod
+hvd.init()
 torch.cuda.set_device(hvd.local_rank())
 
 LEARNING_RATE = 1e-4
@@ -223,7 +225,6 @@ train_sampler = torch.utils.data.distributed.DistributedSampler(earth_dataset, n
 loader = DataLoader(
     earth_dataset,
     batch_size=BATCH_SIZE,
-    shuffle=True, 
     sampler=train_sampler
 )
 
@@ -284,9 +285,9 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
     print("epoch", epoch)
 
     for batch_idx, data in enumerate(loader):
-        x_truth = data["truth"].to(device)
-        x_up = data["upsampled"].to(device)
-        x_input = data["input"].to(device)
+        x_truth = data["truth"].cuda()
+        x_up = data["upsampled"].cuda()
+        x_input = data["input"].cuda()
 
         # pre-train the generator with simple MSE loss
         if epoch < GEN_PRETRAIN_EPOCHS:
@@ -311,7 +312,7 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
                     critic,
                     torch.cat([x_truth, x_up], dim=1),  # real
                     torch.cat([fake, x_up], dim=1),  # fake
-                    device=device,
+                    device="cuda",
                 )
 
                 loss_critic = (
@@ -332,57 +333,62 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
         if epoch > GEN_PRETRAIN_EPOCHS:
             if batch_idx % 3 == 0:
 
-                with torch.no_grad():
-                    gen.eval() # does this need to be included???
-                    fake = gen(x_input)
-                    fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
-                    writer_results.add_figure("Results", fig, global_step=step)
+                if hvd.rank() == 0:
+                    with torch.no_grad():
+                        gen.eval() # does this need to be included???
+                        fake = gen(x_input)
+                        fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
+                        writer_results.add_figure("Results", fig, global_step=step)
 
                 step += 1
 
                 # save checkpoint
-                torch.save(
-                    {
-                        "gen": gen.state_dict(),
-                        "critic": critic.state_dict(),
-                        "opt_gen": opt_gen.state_dict(),
-                        "opt_critic": opt_critic.state_dict(),
-                        "epoch": epoch,
-                    },
-                    path_checkpoint_folder / f"train_{epoch}.pt",
-                )
+                if hvd.rank() == 0:
+                    torch.save(
+                        {
+                            "gen": gen.state_dict(),
+                            "critic": critic.state_dict(),
+                            "opt_gen": opt_gen.state_dict(),
+                            "opt_critic": opt_critic.state_dict(),
+                            "epoch": epoch,
+                        },
+                        path_checkpoint_folder / f"train_{epoch}.pt",
+                    )
         else:
             if batch_idx % 10 == 0:
 
-                with torch.no_grad():
-                    gen.eval() # does this need to be included???
-                    fake = gen(x_input)
-                    fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
-                    writer_results.add_figure("Results", fig, global_step=step)
+                if hvd.rank() == 0:
+                    with torch.no_grad():
+                        gen.eval() # does this need to be included???
+                        fake = gen(x_input)
+                        fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
+                        writer_results.add_figure("Results", fig, global_step=step)
 
                 step += 1
 
                 # save checkpoint
-                torch.save(
-                    {
-                        "gen": gen.state_dict(),
-                        "critic": critic.state_dict(),
-                        "opt_gen": opt_gen.state_dict(),
-                        "opt_critic": opt_critic.state_dict(),
-                        "epoch": epoch,
-                    },
-                    path_checkpoint_folder / f"train_{epoch}.pt",
-                )
+                if hvd.rank() == 0:
+                    torch.save(
+                        {
+                            "gen": gen.state_dict(),
+                            "critic": critic.state_dict(),
+                            "opt_gen": opt_gen.state_dict(),
+                            "opt_critic": opt_critic.state_dict(),
+                            "epoch": epoch,
+                        },
+                        path_checkpoint_folder / f"train_{epoch}.pt",
+                    )
 
     # save checkpoint at end of epoch
-    torch.save(
-        {
-            "gen": gen.state_dict(),
-            "critic": critic.state_dict(),
-            "opt_gen": opt_gen.state_dict(),
-            "opt_critic": opt_critic.state_dict(),
-            "epoch": epoch,
-        },
-        path_checkpoint_folder / f"train_{epoch}.pt",
-    )
+    if hvd.rank() == 0:
+        torch.save(
+            {
+                "gen": gen.state_dict(),
+                "critic": critic.state_dict(),
+                "opt_gen": opt_gen.state_dict(),
+                "opt_critic": opt_critic.state_dict(),
+                "epoch": epoch,
+            },
+            path_checkpoint_folder / f"train_{epoch}.pt",
+        )
 
