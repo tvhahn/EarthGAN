@@ -223,10 +223,12 @@ earth_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
 # partition data set among workers using DistributedSampler
 train_sampler = torch.utils.data.distributed.DistributedSampler(earth_dataset, num_replicas=hvd.size(), rank=hvd.rank())
 
-loader = DataLoader(
+train_loader = DataLoader(
     earth_dataset,
     batch_size=BATCH_SIZE,
-    sampler=train_sampler
+    sampler=train_sampler,
+    shuffle=(train_sampler is None),
+    num_workers=3,
 )
 
 # set summary writer for Tensorboard
@@ -298,7 +300,7 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
     critic.train()
     print("epoch", epoch)
 
-    for batch_idx, data in enumerate(loader):
+    for batch_idx, data in enumerate(train_loader):
         x_truth = data["truth"].cuda()
         x_up = data["upsampled"].cuda()
         x_input = data["input"].cuda()
@@ -327,12 +329,12 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
                     torch.cat([x_truth, x_up], dim=1),  # real
                     torch.cat([fake, x_up], dim=1),  # fake
                     device="cuda",
-                )
+                ).cuda()
 
                 loss_critic = (
                     -(torch.mean(critic_real) - torch.mean(critic_fake))
                     + LAMBDA_GP * gp
-                )
+                ).cuda()
 
                 critic.zero_grad()
                 loss_critic.backward(retain_graph=True)
