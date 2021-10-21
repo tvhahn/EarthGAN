@@ -206,6 +206,7 @@ else:
 
 # save src directory as a zip into the checkpoint folder
 shutil.make_archive(path_checkpoint_folder / f'src_files_{model_start_time}', 'zip', proj_dir / 'src')
+shutil.copy(proj_dir / "bash_scripts/train_model_hpc.sh", path_checkpoint_folder / "train_model_hpc.sh")
 
 #######################################################
 # Prep Model and Data
