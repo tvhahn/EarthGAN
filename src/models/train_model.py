@@ -252,9 +252,10 @@ critic.cuda()
 
 
 opt_gen = optim.Adam(gen.parameters(), lr=1e-4, betas=(0.0, 0.9))
-opt_critic = optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9)
+opt_critic = optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9))
 
 # load from checkpoint if wanted
+
 if path_prev_checkpoint.exists():
     print('Loading from previous checkpoint')
     checkpoint = torch.load(path_prev_checkpoint)
@@ -266,8 +267,6 @@ if path_prev_checkpoint.exists():
 
     opt_gen = hvd.DistributedOptimizer(opt_gen, named_parameters=gen.named_parameters())
     opt_critic = hvd.DistributedOptimizer(opt_critic, named_parameters=critic.named_parameters())
-
-
 
 else:
     epoch_start = 0
@@ -285,6 +284,9 @@ else:
 # broadcast parameters from rank 0 to all other processes.
 hvd.broadcast_parameters(gen.state_dict(), root_rank=0)
 hvd.broadcast_parameters(critic.state_dict(), root_rank=0)
+
+hvd.broadcast_optimizer_state(opt_gen, root_rank=0)
+hvd.broadcast_optimizer_state(opt_critic, root_rank=0)
 
 #######################################################
 # Training Loop
@@ -403,4 +405,3 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
             },
             path_checkpoint_folder / f"train_{epoch}.pt",
         )
-
