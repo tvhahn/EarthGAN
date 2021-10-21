@@ -250,17 +250,9 @@ critic = Discriminator(
 
 critic.cuda()
 
-# initialize weights
-gen.apply(init_weights)
-critic.apply(init_weights)
 
-# initializate optimizer, along with Horovod distributed optimizer
-opt_gen = hvd.DistributedOptimizer(optim.Adam(gen.parameters(), lr=1e-4, betas=(0.0, 0.9)), named_parameters=gen.named_parameters())
-opt_critic = hvd.DistributedOptimizer(optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9)), named_parameters=critic.named_parameters())
-
-# broadcast parameters from rank 0 to all other processes.
-hvd.broadcast_parameters(gen.state_dict(), root_rank=0)
-hvd.broadcast_parameters(critic.state_dict(), root_rank=0)
+opt_gen = optim.Adam(gen.parameters(), lr=1e-4, betas=(0.0, 0.9))
+opt_critic = optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9)
 
 # load from checkpoint if wanted
 if path_prev_checkpoint.exists():
@@ -272,8 +264,27 @@ if path_prev_checkpoint.exists():
     opt_gen.load_state_dict(checkpoint['opt_gen'])
     opt_critic.load_state_dict(checkpoint['opt_critic'])
 
+    opt_gen = hvd.DistributedOptimizer(opt_gen, named_parameters=gen.named_parameters())
+    opt_critic = hvd.DistributedOptimizer(opt_critic, named_parameters=critic.named_parameters())
+
+
+
 else:
     epoch_start = 0
+
+    # initialize weights
+    gen.apply(init_weights)
+    critic.apply(init_weights)
+
+    # initializate optimizer, along with Horovod distributed optimizer
+    opt_gen = hvd.DistributedOptimizer(opt_gen, named_parameters=gen.named_parameters())
+    opt_critic = hvd.DistributedOptimizer(opt_critic, named_parameters=critic.named_parameters())
+
+
+
+# broadcast parameters from rank 0 to all other processes.
+hvd.broadcast_parameters(gen.state_dict(), root_rank=0)
+hvd.broadcast_parameters(critic.state_dict(), root_rank=0)
 
 #######################################################
 # Training Loop

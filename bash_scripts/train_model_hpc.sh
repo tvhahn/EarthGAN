@@ -15,6 +15,8 @@ PROJECT_DIR=$1
 
 source ~/earth/bin/activate
 
+export NCCL_BLOCKING_WAIT=1
+
 # copy processed data from scratch to the temporary directory used for batch job
 # this will be much faster as the train_model.py rapidly access the training data
 mkdir $SLURM_TMPDIR/data
