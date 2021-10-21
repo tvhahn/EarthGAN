@@ -26,7 +26,7 @@ cp -r ~/scratch/earth-mantle-surrogate/processed $SLURM_TMPDIR/data
 # begin training
 python $PROJECT_DIR/src/models/train_model.py \
     --path_data $SLURM_TMPDIR/data/processed \
-    --checkpoint 2021_10_20_145017 \
+    --checkpoint 2021_10_20_185433 \
     --proj_dir $PROJECT_DIR \
     --batch_size 1 \
     # --cat_noise
