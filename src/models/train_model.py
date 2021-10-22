@@ -81,7 +81,10 @@ GEN_PRETRAIN_EPOCHS = 5  # number of epochs to pretrain generator
 
 
 def plot_fake_truth(fake, x_truth, x_up, epoch_i, batch_i):
-    plt.switch_backend("agg")
+    """Create the ground-truth, upscaled, and fake images used
+    in Tensorboard"""
+
+    plt.switch_backend("agg")  # needed for HPC
 
     with torch.no_grad():
         fake = gen(x_input).cpu()
@@ -123,6 +126,7 @@ def find_most_recent_checkpoint(path_prev_checkpoint):
 
 
 def set_directories():
+    """Sets the directory paths used for data, checkpoints, etc."""
 
     # check if "scratch" path exists in the home directory
     # if it does, assume we are on HPC
@@ -230,6 +234,23 @@ def set_directories():
     )
 
 
+def save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic):
+    torch.save(
+        {
+            "gen": gen.state_dict(),
+            "critic": critic.state_dict(),
+            "opt_gen": opt_gen.state_dict(),
+            "opt_critic": opt_critic.state_dict(),
+            "epoch": epoch,
+        },
+        path_checkpoint_folder / f"train_{epoch}.pt",
+    )
+
+
+def train(gen, critic, opt_gen, opt_critic, train_loader):
+    pass
+
+
 #######################################################
 # Set Directories
 #######################################################
@@ -247,10 +268,10 @@ def set_directories():
 # Prep Model and Data
 #######################################################
 
-earth_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
+train_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
 
-loader = DataLoader(
-    earth_dataset,
+train_loader = DataLoader(
+    train_dataset,
     batch_size=BATCH_SIZE,
     shuffle=True,
 )
@@ -303,7 +324,7 @@ for epoch in range(epoch_start, epoch_start + NUM_EPOCHS):
     critic.train()
     print("epoch", epoch)
 
-    for batch_idx, data in enumerate(loader):
+    for batch_idx, data in enumerate(train_loader):
         x_truth = data["truth"].to(device)
         x_up = data["upsampled"].to(device)
         x_input = data["input"].to(device)
@@ -360,17 +381,8 @@ for epoch in range(epoch_start, epoch_start + NUM_EPOCHS):
 
                 step += 1
 
-                # save checkpoint
-                torch.save(
-                    {
-                        "gen": gen.state_dict(),
-                        "critic": critic.state_dict(),
-                        "opt_gen": opt_gen.state_dict(),
-                        "opt_critic": opt_critic.state_dict(),
-                        "epoch": epoch,
-                    },
-                    path_checkpoint_folder / f"train_{epoch}.pt",
-                )
+                save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
+
         else:
             if batch_idx % 10 == 0:
 
@@ -382,26 +394,7 @@ for epoch in range(epoch_start, epoch_start + NUM_EPOCHS):
 
                 step += 1
 
-                # save checkpoint
-                torch.save(
-                    {
-                        "gen": gen.state_dict(),
-                        "critic": critic.state_dict(),
-                        "opt_gen": opt_gen.state_dict(),
-                        "opt_critic": opt_critic.state_dict(),
-                        "epoch": epoch,
-                    },
-                    path_checkpoint_folder / f"train_{epoch}.pt",
-                )
+                save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
 
     # save checkpoint at end of epoch
-    torch.save(
-        {
-            "gen": gen.state_dict(),
-            "critic": critic.state_dict(),
-            "opt_gen": opt_gen.state_dict(),
-            "opt_critic": opt_critic.state_dict(),
-            "epoch": epoch,
-        },
-        path_checkpoint_folder / f"train_{epoch}.pt",
-    )
+    save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
