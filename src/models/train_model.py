@@ -26,10 +26,8 @@ from src.models.loss.wasserstein import gradient_penalty
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
-    "--path_data",
-    dest="path_data", 
-    type=str, 
-    help="Path to processed data")
+    "--path_data", dest="path_data", type=str, help="Path to processed data"
+)
 
 parser.add_argument(
     "-c",
@@ -56,9 +54,9 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '--cat_noise', 
-    action='store_true', 
-    help="Will concatenate noise if argument used (sets cat_noise=True)."
+    "--cat_noise",
+    action="store_true",
+    help="Will concatenate noise if argument used (sets cat_noise=True).",
 )
 
 args = parser.parse_args()
@@ -84,7 +82,7 @@ GEN_PRETRAIN_EPOCHS = 5  # number of epochs to pretrain generator
 
 def plot_fake_truth(fake, x_truth, x_up, epoch_i, batch_i):
     plt.switch_backend("agg")
-    
+
     with torch.no_grad():
         fake = gen(x_input).cpu()
         x_truth = x_truth.cpu()
@@ -106,7 +104,7 @@ def plot_fake_truth(fake, x_truth, x_up, epoch_i, batch_i):
             ax[2, i].pcolormesh(x_truth[bi, vi, ri, :, :].cpu(), cmap=color_scheme)
             ax[2, i].get_xaxis().set_visible(False)
             ax[2, i].get_yaxis().set_visible(False)
-        plt.suptitle(f'Epoch {epoch_i}, Batch Index {batch_i}')
+        plt.suptitle(f"Epoch {epoch_i}, Batch Index {batch_i}")
         plt.subplots_adjust(wspace=0, hspace=0)
 
     return fig
@@ -143,7 +141,7 @@ def set_directories():
         prev_checkpoint_folder_name = args.ckpt_name
     else:
         # set dummy name for path_prev_checkpoint
-        path_prev_checkpoint = Path('no_prev_checkpoint_needed')
+        path_prev_checkpoint = Path("no_prev_checkpoint_needed")
 
     if args.proj_dir:
         proj_dir = Path(args.proj_dir)
@@ -164,16 +162,22 @@ def set_directories():
                 root_dir / "models/interim/checkpoints" / prev_checkpoint_folder_name
             )
             if Path(path_prev_checkpoint).exists():
-                print("Previous checkpoints exist. Training from most recent checkpoint.")
+                print(
+                    "Previous checkpoints exist. Training from most recent checkpoint."
+                )
 
                 path_prev_checkpoint = find_most_recent_checkpoint(path_prev_checkpoint)
 
             else:
-                print("Could not find previous checkpoint folder. Training from beginning.")
+                print(
+                    "Could not find previous checkpoint folder. Training from beginning."
+                )
 
         path_input_folder = path_processed_data / "input"
         path_truth_folder = path_processed_data / "truth"
-        path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
+        path_checkpoint_folder = (
+            root_dir / "models/interim/checkpoints" / model_start_time
+        )
         Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
 
     else:
@@ -187,108 +191,57 @@ def set_directories():
                 root_dir / "models/interim/checkpoints" / prev_checkpoint_folder_name
             )
             if Path(path_prev_checkpoint).exists():
-                print("Previous checkpoints exist. Training from most recent checkpoint.")
+                print(
+                    "Previous checkpoints exist. Training from most recent checkpoint."
+                )
 
                 path_prev_checkpoint = find_most_recent_checkpoint(path_prev_checkpoint)
 
             else:
-                print("Could not find previous checkpoint folder. Training from beginning.")
+                print(
+                    "Could not find previous checkpoint folder. Training from beginning."
+                )
 
         path_input_folder = path_processed_data / "input"
         path_truth_folder = path_processed_data / "truth"
-        path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
+        path_checkpoint_folder = (
+            root_dir / "models/interim/checkpoints" / model_start_time
+        )
         Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
 
     # save src directory as a zip into the checkpoint folder
-    shutil.make_archive(path_checkpoint_folder / f'src_files_{model_start_time}', 'zip', proj_dir / 'src')
-    shutil.copy(proj_dir / "bash_scripts/train_model_hpc.sh", path_checkpoint_folder / "train_model_hpc.sh")
+    shutil.make_archive(
+        path_checkpoint_folder / f"src_files_{model_start_time}",
+        "zip",
+        proj_dir / "src",
+    )
+    shutil.copy(
+        proj_dir / "bash_scripts/train_model_hpc.sh",
+        path_checkpoint_folder / "train_model_hpc.sh",
+    )
 
-    return path_input_folder, path_truth_folder, path_checkpoint_folder
+    return (
+        root_dir,
+        path_input_folder,
+        path_truth_folder,
+        path_checkpoint_folder,
+        path_prev_checkpoint,
+        model_start_time,
+    )
 
 
 #######################################################
 # Set Directories
 #######################################################
 
-# check if "scratch" path exists in the home directory
-# if it does, assume we are on HPC
-scratch_path = Path.home() / "scratch"
-if scratch_path.exists():
-    print("Assume on HPC")
-else:
-    print("Assume on local compute")
-
-
-path_processed_data = Path(args.path_data)
-
-# if loading the model from a checkpoint, a checkpoint folder name
-# should be passed as an argument, like: -c 2021_07_14_185903
-# the various .pt files will be inside the checkpoint folder
-if args.ckpt_name:
-    prev_checkpoint_folder_name = args.ckpt_name
-else:
-    # set dummy name for path_prev_checkpoint
-    path_prev_checkpoint = Path('no_prev_checkpoint_needed')
-
-
-if args.proj_dir:
-    proj_dir = Path(args.proj_dir)
-else:
-    # proj_dir assumed to be cwd
-    proj_dir = Path.cwd()
-
-
-# set time
-model_start_time = datetime.datetime.now().strftime("%Y_%m_%d_%H%M%S")
-
-if scratch_path.exists():
-    # for HPC
-    root_dir = scratch_path / "earth-mantle-surrogate"
-    print(root_dir)
-
-    if args.ckpt_name:
-        path_prev_checkpoint = (
-            root_dir / "models/interim/checkpoints" / prev_checkpoint_folder_name
-        )
-        if Path(path_prev_checkpoint).exists():
-            print("Previous checkpoints exist. Training from most recent checkpoint.")
-
-            path_prev_checkpoint = find_most_recent_checkpoint(path_prev_checkpoint)
-
-        else:
-            print("Could not find previous checkpoint folder. Training from beginning.")
-
-    path_input_folder = path_processed_data / "input"
-    path_truth_folder = path_processed_data / "truth"
-    path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
-    Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
-
-else:
-
-    # for local compute
-    root_dir = Path.cwd()  # set the root directory as a Pathlib path
-    print(root_dir)
-
-    if args.ckpt_name:
-        path_prev_checkpoint = (
-            root_dir / "models/interim/checkpoints" / prev_checkpoint_folder_name
-        )
-        if Path(path_prev_checkpoint).exists():
-            print("Previous checkpoints exist. Training from most recent checkpoint.")
-
-            path_prev_checkpoint = find_most_recent_checkpoint(path_prev_checkpoint)
-
-        else:
-            print("Could not find previous checkpoint folder. Training from beginning.")
-
-    path_input_folder = path_processed_data / "input"
-    path_truth_folder = path_processed_data / "truth"
-    path_checkpoint_folder = root_dir / "models/interim/checkpoints" / model_start_time
-    Path(path_checkpoint_folder).mkdir(parents=True, exist_ok=True)
-
-# save src directory as a zip into the checkpoint folder
-shutil.make_archive(path_checkpoint_folder / f'src_files_{model_start_time}', 'zip', proj_dir / 'src')
-shutil.copy(proj_dir / "bash_scripts/train_model_hpc.sh", path_checkpoint_folder / "train_model_hpc.sh")
+(
+    root_dir,
+    path_input_folder,
+    path_truth_folder,
+    path_checkpoint_folder,
+    path_prev_checkpoint,
+    model_start_time,
+) = set_directories()
 
 #######################################################
 # Prep Model and Data
@@ -329,13 +282,13 @@ opt_critic = optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9))
 
 # load from checkpoint if wanted
 if path_prev_checkpoint.exists():
-    print('Loading from previous checkpoint')
+    print("Loading from previous checkpoint")
     checkpoint = torch.load(path_prev_checkpoint)
-    epoch_start = checkpoint['epoch']+1
-    gen.load_state_dict(checkpoint['gen'])
-    critic.load_state_dict(checkpoint['critic'])
-    opt_gen.load_state_dict(checkpoint['opt_gen'])
-    opt_critic.load_state_dict(checkpoint['opt_critic'])
+    epoch_start = checkpoint["epoch"] + 1
+    gen.load_state_dict(checkpoint["gen"])
+    critic.load_state_dict(checkpoint["critic"])
+    opt_gen.load_state_dict(checkpoint["opt_gen"])
+    opt_critic.load_state_dict(checkpoint["opt_critic"])
 
 else:
     epoch_start = 0
@@ -345,7 +298,7 @@ else:
 #######################################################
 
 step = 0
-for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
+for epoch in range(epoch_start, epoch_start + NUM_EPOCHS):
     gen.train()
     critic.train()
     print("epoch", epoch)
@@ -400,7 +353,7 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
             if batch_idx % 3 == 0:
 
                 with torch.no_grad():
-                    gen.eval() # does this need to be included???
+                    gen.eval()  # does this need to be included???
                     fake = gen(x_input)
                     fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
                     writer_results.add_figure("Results", fig, global_step=step)
@@ -422,7 +375,7 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
             if batch_idx % 10 == 0:
 
                 with torch.no_grad():
-                    gen.eval() # does this need to be included???
+                    gen.eval()  # does this need to be included???
                     fake = gen(x_input)
                     fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
                     writer_results.add_figure("Results", fig, global_step=step)
@@ -452,4 +405,3 @@ for epoch in range(epoch_start, epoch_start+ NUM_EPOCHS):
         },
         path_checkpoint_folder / f"train_{epoch}.pt",
     )
-
