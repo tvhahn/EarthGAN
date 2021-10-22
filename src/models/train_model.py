@@ -246,9 +246,100 @@ def save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_cri
         path_checkpoint_folder / f"train_{epoch}.pt",
     )
 
+def create_tensorboard_fig(x_input,  x_truth, x_up, epoch, batch_idx, step, writer_results):
+    with torch.no_grad():
+        gen.eval()  # does this need to be included???
+        fake = gen(x_input)
+        fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
+        writer_results.add_figure("Results", fig, global_step=step)
 
-def train(gen, critic, opt_gen, opt_critic, train_loader):
-    pass
+
+def train(args, gen, critic, opt_gen, opt_critic, train_loader):
+
+    # set summary writer for Tensorboard
+    writer_results = SummaryWriter(root_dir / "models/interim/logs/" / model_start_time)
+
+    # load from checkpoint if wanted
+    if path_prev_checkpoint.exists():
+        print("Loading from previous checkpoint")
+        checkpoint = torch.load(path_prev_checkpoint)
+        epoch_start = checkpoint["epoch"] + 1
+        gen.load_state_dict(checkpoint["gen"])
+        critic.load_state_dict(checkpoint["critic"])
+        opt_gen.load_state_dict(checkpoint["opt_gen"])
+        opt_critic.load_state_dict(checkpoint["opt_critic"])
+
+    else:
+        epoch_start = 0
+
+    step = 0
+    for epoch in range(epoch_start, epoch_start + NUM_EPOCHS):
+        gen.train()
+        critic.train()
+        print("epoch", epoch)
+
+        for batch_idx, data in enumerate(train_loader):
+            x_truth = data["truth"].to(device)
+            x_up = data["upsampled"].to(device)
+            x_input = data["input"].to(device)
+
+            # pre-train the generator with simple MSE loss
+            if epoch < GEN_PRETRAIN_EPOCHS:
+                criterion = nn.MSELoss()
+                gen_fake = gen(x_input)
+                loss_mse = criterion(gen_fake, x_truth)
+                gen.zero_grad()
+                loss_mse.backward()
+                opt_gen.step()
+
+            # after pre-training of generator, enter the
+            # full training loop and train critic (e.g. discriminator) too
+            else:
+                # train critic
+                for _ in range(CRITIC_ITERATIONS):
+                    fake = gen(x_input)
+
+                    critic_real = critic(torch.cat([x_truth, x_up], dim=1)).view(-1)
+                    critic_fake = critic(torch.cat([fake, x_up], dim=1)).view(-1)
+
+                    gp = gradient_penalty(
+                        critic,
+                        torch.cat([x_truth, x_up], dim=1),  # real
+                        torch.cat([fake, x_up], dim=1),  # fake
+                        device=device,
+                    )
+
+                    loss_critic = (
+                        -(torch.mean(critic_real) - torch.mean(critic_fake))
+                        + LAMBDA_GP * gp
+                    )
+
+                    critic.zero_grad()
+                    loss_critic.backward(retain_graph=True)
+                    opt_critic.step()
+
+                # train generator after every N critic iterations
+                gen_fake = critic(torch.cat([fake, x_up], dim=1)).reshape(-1)
+                loss_gen = -torch.mean(gen_fake)
+                gen.zero_grad()
+                loss_gen.backward()
+                opt_gen.step()
+            if epoch > GEN_PRETRAIN_EPOCHS:
+                if batch_idx % 3 == 0:
+
+                    create_tensorboard_fig(x_input,  x_truth, x_up, epoch, batch_idx, step, writer_results)
+                    save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
+                    step += 1
+            else:
+                if batch_idx % 10 == 0:
+
+                    create_tensorboard_fig(x_input,  x_truth, x_up, epoch, batch_idx, step, writer_results)
+                    save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
+                    step += 1
+
+        # save checkpoint at end of epoch
+        save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
+
 
 
 #######################################################
@@ -276,8 +367,7 @@ train_loader = DataLoader(
     shuffle=True,
 )
 
-# set summary writer for Tensorboard
-writer_results = SummaryWriter(root_dir / "models/interim/logs/" / model_start_time)
+
 
 gen = Generator(
     in_chan=1,
@@ -301,100 +391,10 @@ critic.apply(init_weights)
 opt_gen = optim.Adam(gen.parameters(), lr=1e-4, betas=(0.0, 0.9))
 opt_critic = optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9))
 
-# load from checkpoint if wanted
-if path_prev_checkpoint.exists():
-    print("Loading from previous checkpoint")
-    checkpoint = torch.load(path_prev_checkpoint)
-    epoch_start = checkpoint["epoch"] + 1
-    gen.load_state_dict(checkpoint["gen"])
-    critic.load_state_dict(checkpoint["critic"])
-    opt_gen.load_state_dict(checkpoint["opt_gen"])
-    opt_critic.load_state_dict(checkpoint["opt_critic"])
 
-else:
-    epoch_start = 0
 
 #######################################################
 # Training Loop
 #######################################################
 
-step = 0
-for epoch in range(epoch_start, epoch_start + NUM_EPOCHS):
-    gen.train()
-    critic.train()
-    print("epoch", epoch)
 
-    for batch_idx, data in enumerate(train_loader):
-        x_truth = data["truth"].to(device)
-        x_up = data["upsampled"].to(device)
-        x_input = data["input"].to(device)
-
-        # pre-train the generator with simple MSE loss
-        if epoch < GEN_PRETRAIN_EPOCHS:
-            criterion = nn.MSELoss()
-            gen_fake = gen(x_input)
-            loss_mse = criterion(gen_fake, x_truth)
-            gen.zero_grad()
-            loss_mse.backward()
-            opt_gen.step()
-
-        # after pre-training of generator, enter the
-        # full training loop and train critic (e.g. discriminator) too
-        else:
-            # train critic
-            for _ in range(CRITIC_ITERATIONS):
-                fake = gen(x_input)
-
-                critic_real = critic(torch.cat([x_truth, x_up], dim=1)).view(-1)
-                critic_fake = critic(torch.cat([fake, x_up], dim=1)).view(-1)
-
-                gp = gradient_penalty(
-                    critic,
-                    torch.cat([x_truth, x_up], dim=1),  # real
-                    torch.cat([fake, x_up], dim=1),  # fake
-                    device=device,
-                )
-
-                loss_critic = (
-                    -(torch.mean(critic_real) - torch.mean(critic_fake))
-                    + LAMBDA_GP * gp
-                )
-
-                critic.zero_grad()
-                loss_critic.backward(retain_graph=True)
-                opt_critic.step()
-
-            # train generator after every N critic iterations
-            gen_fake = critic(torch.cat([fake, x_up], dim=1)).reshape(-1)
-            loss_gen = -torch.mean(gen_fake)
-            gen.zero_grad()
-            loss_gen.backward()
-            opt_gen.step()
-        if epoch > GEN_PRETRAIN_EPOCHS:
-            if batch_idx % 3 == 0:
-
-                with torch.no_grad():
-                    gen.eval()  # does this need to be included???
-                    fake = gen(x_input)
-                    fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
-                    writer_results.add_figure("Results", fig, global_step=step)
-
-                step += 1
-
-                save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
-
-        else:
-            if batch_idx % 10 == 0:
-
-                with torch.no_grad():
-                    gen.eval()  # does this need to be included???
-                    fake = gen(x_input)
-                    fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
-                    writer_results.add_figure("Results", fig, global_step=step)
-
-                step += 1
-
-                save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
-
-    # save checkpoint at end of epoch
-    save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
