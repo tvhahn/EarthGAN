@@ -251,6 +251,48 @@ def create_tensorboard_fig(
         fig = plot_fake_truth(fake, x_truth, x_input, x_up, epoch, batch_idx)
         writer_results.add_figure("Results", fig, global_step=step)
 
+def main():
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    train_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
+
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=True,
+    )
+
+    gen = Generator(
+        in_chan=1,
+        out_chan=1,
+        scale_factor=8,
+        chan_base=128,
+        chan_min=64,
+        chan_max=512,
+        cat_noise=args.cat_noise,
+    ).to(device)
+
+    critic = Discriminator(
+        in_chan=2, out_chan=2, scale_factor=8, chan_base=512, chan_min=64, chan_max=512
+    ).to(device)
+
+    # initialize weights
+    gen.apply(init_weights)
+    critic.apply(init_weights)
+
+    # initializate optimizer
+    opt_gen = optim.Adam(gen.parameters(), lr=1e-4, betas=(0.0, 0.9))
+    opt_critic = optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9))
+
+    train(
+        gen,
+        critic,
+        opt_gen,
+        opt_critic,
+        device,
+        train_loader,
+    )
+
 
 def train(
     gen,
@@ -260,7 +302,7 @@ def train(
     device,
     train_loader,
 ):
-
+    
     # set summary writer for Tensorboard
     writer_results = SummaryWriter(root_dir / "models/interim/logs/" / model_start_time)
 
@@ -356,8 +398,6 @@ def train(
 
 if __name__ == "__main__":
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-
     (
         root_dir,
         path_input_folder,
@@ -367,41 +407,6 @@ if __name__ == "__main__":
         model_start_time,
     ) = set_directories()
 
-    train_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
+    main()
 
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=BATCH_SIZE,
-        shuffle=True,
-    )
-
-    gen = Generator(
-        in_chan=1,
-        out_chan=1,
-        scale_factor=8,
-        chan_base=128,
-        chan_min=64,
-        chan_max=512,
-        cat_noise=args.cat_noise,
-    ).to(device)
-
-    critic = Discriminator(
-        in_chan=2, out_chan=2, scale_factor=8, chan_base=512, chan_min=64, chan_max=512
-    ).to(device)
-
-    # initialize weights
-    gen.apply(init_weights)
-    critic.apply(init_weights)
-
-    # initializate optimizer
-    opt_gen = optim.Adam(gen.parameters(), lr=1e-4, betas=(0.0, 0.9))
-    opt_critic = optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9))
-
-    train(
-        gen,
-        critic,
-        opt_gen,
-        opt_critic,
-        device,
-        train_loader,
-    )
+    
