@@ -75,14 +75,14 @@ GEN_PRETRAIN_EPOCHS = 5  # number of epochs to pretrain generator
 #######################################################
 
 
-def plot_fake_truth(fake, x_truth, x_input, x_up, epoch_i, batch_i):
+def plot_fake_truth(fake, x_truth, x_up, epoch_i, batch_i):
     """Create the ground-truth, upscaled, and fake images used
     in Tensorboard"""
 
     plt.switch_backend("agg")  # needed for HPC
 
     with torch.no_grad():
-        fake = gen(x_input).cpu()
+        fake = fake.cpu()
         x_truth = x_truth.cpu()
         color_scheme = "inferno"
         no_col = 10
@@ -248,13 +248,13 @@ def create_tensorboard_fig(
     with torch.no_grad():
         gen.eval()  # does this need to be included???
         fake = gen(x_input)
-        fig = plot_fake_truth(fake, x_truth, x_input, x_up, epoch, batch_idx)
+        fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
         writer_results.add_figure("Results", fig, global_step=step)
 
 
 def main():
     """Establish models and run training loop"""
-    
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     train_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
@@ -375,6 +375,7 @@ def train(
                 gen.zero_grad()
                 loss_gen.backward()
                 opt_gen.step()
+                
             if epoch > GEN_PRETRAIN_EPOCHS:
                 if batch_idx % 3 == 0:
 
