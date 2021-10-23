@@ -251,7 +251,10 @@ def create_tensorboard_fig(
         fig = plot_fake_truth(fake, x_truth, x_input, x_up, epoch, batch_idx)
         writer_results.add_figure("Results", fig, global_step=step)
 
+
 def main():
+    """Establish models and run training loop"""
+    
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     train_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
@@ -302,7 +305,8 @@ def train(
     device,
     train_loader,
 ):
-    
+    """Training scrip"""
+
     # set summary writer for Tensorboard
     writer_results = SummaryWriter(root_dir / "models/interim/logs/" / model_start_time)
 
@@ -375,7 +379,14 @@ def train(
                 if batch_idx % 3 == 0:
 
                     create_tensorboard_fig(
-                        gen, x_input, x_truth, x_up, epoch, batch_idx, step, writer_results
+                        gen,
+                        x_input,
+                        x_truth,
+                        x_up,
+                        epoch,
+                        batch_idx,
+                        step,
+                        writer_results,
                     )
                     save_checkpoint(
                         epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic
@@ -385,7 +396,14 @@ def train(
                 if batch_idx % 10 == 0:
 
                     create_tensorboard_fig(
-                        gen, x_input, x_truth, x_up, epoch, batch_idx, step, writer_results
+                        gen,
+                        x_input,
+                        x_truth,
+                        x_up,
+                        epoch,
+                        batch_idx,
+                        step,
+                        writer_results,
                     )
                     save_checkpoint(
                         epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic
@@ -408,5 +426,3 @@ if __name__ == "__main__":
     ) = set_directories()
 
     main()
-
-    
