@@ -59,15 +59,55 @@ parser.add_argument(
     help="Will concatenate noise if argument used (sets cat_noise=True).",
 )
 
+parser.add_argument(
+    "--learning_rate",
+    dest="learning_rate",
+    type=float,
+    default=1e-4,
+    help="Learning rate for optimizer",
+)
+
+parser.add_argument(
+    "--critic_iterations",
+    dest="critic_iterations",
+    type=int,
+    default=5,
+    help="Number of critic iterations for every 1 generator iteration",
+)
+
+parser.add_argument(
+    "--num_epochs",
+    dest="num_epochs",
+    type=int,
+    default=500,
+    help="Number of epochs",
+)
+
+parser.add_argument(
+    "--lambda_gp",
+    dest="lambda_gp",
+    type=int,
+    default=10,
+    help="Lambda modifier for gradient penalty",
+)
+
+parser.add_argument(
+    "--gen_pretrain_epochs",
+    dest="gen_pretrain_epochs",
+    type=int,
+    default=5,
+    help="Epochs to train generator alone at the beginning",
+)
+
 args = parser.parse_args()
 
 # hyperparameters
-LEARNING_RATE = 1e-4
-NUM_EPOCHS = 500
+LEARNING_RATE = args.learning_rate
+NUM_EPOCHS = args.num_epochs
 BATCH_SIZE = args.batch_size
-CRITIC_ITERATIONS = 5
-LAMBDA_GP = 10
-GEN_PRETRAIN_EPOCHS = 5  # number of epochs to pretrain generator
+CRITIC_ITERATIONS = args.critic_iterations
+LAMBDA_GP = args.lambda_gp
+GEN_PRETRAIN_EPOCHS = args.gen_pretrain_epochs
 
 
 ########################################################
@@ -284,8 +324,8 @@ def main():
     critic.apply(init_weights)
 
     # initializate optimizer
-    opt_gen = optim.Adam(gen.parameters(), lr=1e-4, betas=(0.0, 0.9))
-    opt_critic = optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9))
+    opt_gen = optim.Adam(gen.parameters(), lr=LEARNING_RATE, betas=(0.0, 0.9))
+    opt_critic = optim.Adam(critic.parameters(), lr=LEARNING_RATE, betas=(0.0, 0.9))
 
     train(
         gen,
