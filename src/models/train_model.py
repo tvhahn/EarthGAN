@@ -61,12 +61,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-
-#######################################################
-# Set Hyperparameters
-#######################################################
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
+# hyperparameters
 LEARNING_RATE = 1e-4
 NUM_EPOCHS = 500
 BATCH_SIZE = args.batch_size
@@ -246,7 +241,10 @@ def save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_cri
         path_checkpoint_folder / f"train_{epoch}.pt",
     )
 
-def create_tensorboard_fig(x_input,  x_truth, x_up, epoch, batch_idx, step, writer_results):
+
+def create_tensorboard_fig(
+    gen, x_input, x_truth, x_up, epoch, batch_idx, step, writer_results
+):
     with torch.no_grad():
         gen.eval()  # does this need to be included???
         fake = gen(x_input)
@@ -254,7 +252,18 @@ def create_tensorboard_fig(x_input,  x_truth, x_up, epoch, batch_idx, step, writ
         writer_results.add_figure("Results", fig, global_step=step)
 
 
-def train(args, gen, critic, opt_gen, opt_critic, train_loader):
+def train(
+    gen,
+    critic,
+    opt_gen,
+    opt_critic,
+    device,
+    train_loader,
+    root_dir,
+    path_prev_checkpoint,
+    path_checkpoint_folder,
+    model_start_time,
+):
 
     # set summary writer for Tensorboard
     writer_results = SummaryWriter(root_dir / "models/interim/logs/" / model_start_time)
@@ -327,74 +336,84 @@ def train(args, gen, critic, opt_gen, opt_critic, train_loader):
             if epoch > GEN_PRETRAIN_EPOCHS:
                 if batch_idx % 3 == 0:
 
-                    create_tensorboard_fig(x_input,  x_truth, x_up, epoch, batch_idx, step, writer_results)
-                    save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
+                    create_tensorboard_fig(
+                        x_input, x_truth, x_up, epoch, batch_idx, step, writer_results
+                    )
+                    save_checkpoint(
+                        epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic
+                    )
                     step += 1
             else:
                 if batch_idx % 10 == 0:
 
-                    create_tensorboard_fig(x_input,  x_truth, x_up, epoch, batch_idx, step, writer_results)
-                    save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
+                    create_tensorboard_fig(
+                        x_input, x_truth, x_up, epoch, batch_idx, step, writer_results
+                    )
+                    save_checkpoint(
+                        epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic
+                    )
                     step += 1
 
         # save checkpoint at end of epoch
         save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
 
 
+def main():
 
-#######################################################
-# Set Directories
-#######################################################
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-(
-    root_dir,
-    path_input_folder,
-    path_truth_folder,
-    path_checkpoint_folder,
-    path_prev_checkpoint,
-    model_start_time,
-) = set_directories()
+    (
+        root_dir,
+        path_input_folder,
+        path_truth_folder,
+        path_checkpoint_folder,
+        path_prev_checkpoint,
+        model_start_time,
+    ) = set_directories()
 
-#######################################################
-# Prep Model and Data
-#######################################################
+    train_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
 
-train_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=True,
+    )
 
-train_loader = DataLoader(
-    train_dataset,
-    batch_size=BATCH_SIZE,
-    shuffle=True,
-)
+    gen = Generator(
+        in_chan=1,
+        out_chan=1,
+        scale_factor=8,
+        chan_base=128,
+        chan_min=64,
+        chan_max=512,
+        cat_noise=args.cat_noise,
+    ).to(device)
+
+    critic = Discriminator(
+        in_chan=2, out_chan=2, scale_factor=8, chan_base=512, chan_min=64, chan_max=512
+    ).to(device)
+
+    # initialize weights
+    gen.apply(init_weights)
+    critic.apply(init_weights)
+
+    # initializate optimizer
+    opt_gen = optim.Adam(gen.parameters(), lr=1e-4, betas=(0.0, 0.9))
+    opt_critic = optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9))
+
+    train(
+        gen,
+        critic,
+        opt_gen,
+        opt_critic,
+        device,
+        train_loader,
+        root_dir,
+        path_prev_checkpoint,
+        path_checkpoint_folder,
+        model_start_time,
+    )
 
 
-
-gen = Generator(
-    in_chan=1,
-    out_chan=1,
-    scale_factor=8,
-    chan_base=128,
-    chan_min=64,
-    chan_max=512,
-    cat_noise=args.cat_noise,
-).to(device)
-
-critic = Discriminator(
-    in_chan=2, out_chan=2, scale_factor=8, chan_base=512, chan_min=64, chan_max=512
-).to(device)
-
-# initialize weights
-gen.apply(init_weights)
-critic.apply(init_weights)
-
-# initializate optimizer
-opt_gen = optim.Adam(gen.parameters(), lr=1e-4, betas=(0.0, 0.9))
-opt_critic = optim.Adam(critic.parameters(), lr=1e-4, betas=(0.0, 0.9))
-
-
-
-#######################################################
-# Training Loop
-#######################################################
-
-
+if __name__ == "__main__":
+    main()
