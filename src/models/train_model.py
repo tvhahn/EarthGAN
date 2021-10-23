@@ -75,7 +75,7 @@ GEN_PRETRAIN_EPOCHS = 5  # number of epochs to pretrain generator
 #######################################################
 
 
-def plot_fake_truth(fake, x_truth, x_up, epoch_i, batch_i):
+def plot_fake_truth(fake, x_truth, x_input, x_up, epoch_i, batch_i):
     """Create the ground-truth, upscaled, and fake images used
     in Tensorboard"""
 
@@ -248,7 +248,7 @@ def create_tensorboard_fig(
     with torch.no_grad():
         gen.eval()  # does this need to be included???
         fake = gen(x_input)
-        fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
+        fig = plot_fake_truth(fake, x_truth, x_input, x_up, epoch, batch_idx)
         writer_results.add_figure("Results", fig, global_step=step)
 
 
@@ -259,10 +259,6 @@ def train(
     opt_critic,
     device,
     train_loader,
-    root_dir,
-    path_prev_checkpoint,
-    path_checkpoint_folder,
-    model_start_time,
 ):
 
     # set summary writer for Tensorboard
@@ -337,7 +333,7 @@ def train(
                 if batch_idx % 3 == 0:
 
                     create_tensorboard_fig(
-                        x_input, x_truth, x_up, epoch, batch_idx, step, writer_results
+                        gen, x_input, x_truth, x_up, epoch, batch_idx, step, writer_results
                     )
                     save_checkpoint(
                         epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic
@@ -347,7 +343,7 @@ def train(
                 if batch_idx % 10 == 0:
 
                     create_tensorboard_fig(
-                        x_input, x_truth, x_up, epoch, batch_idx, step, writer_results
+                        gen, x_input, x_truth, x_up, epoch, batch_idx, step, writer_results
                     )
                     save_checkpoint(
                         epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic
@@ -358,7 +354,7 @@ def train(
         save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
 
 
-def main():
+if __name__ == "__main__":
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -408,12 +404,4 @@ def main():
         opt_critic,
         device,
         train_loader,
-        root_dir,
-        path_prev_checkpoint,
-        path_checkpoint_folder,
-        model_start_time,
     )
-
-
-if __name__ == "__main__":
-    main()
