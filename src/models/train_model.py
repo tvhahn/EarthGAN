@@ -417,7 +417,7 @@ def train(
                 opt_gen.step()
                 
             if epoch > GEN_PRETRAIN_EPOCHS:
-                if batch_idx % 3 == 0:
+                if batch_idx % 10 == 0:
 
                     create_tensorboard_fig(
                         gen,
