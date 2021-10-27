@@ -1,8 +1,6 @@
 EarthGAN - Earth Mantle Surrogate Modeling
 ==============================
 
-[![Source code](https://img.shields.io/badge/code-PyTorch-009900.svg)](https://github.com/tvhahn/EarthGAN/blob/master/src/models/train_model.py) [![arXiv](https://img.shields.io/badge/arXiv-2110.13315-b31b1b.svg)](https://arxiv.org/abs/2110.13315)
-
 > Can a surrogate model of the [Earth’s Mantle Convection data set](https://scivis2021.netlify.app/data/) be built such that it can be readily run in a web-browser and produce high-fidelity    results? We're trying to do just that through the use of a generative adversarial network -- we call ours EarthGAN. We are in active research.
 
 
@@ -14,11 +12,13 @@ See how EarthGAN currently works! Open up the Colab notebook and create results 
 
 
 
-Progress updates, along with my thoughts, can be found in the [devlog](devlog/). The preliminary results were presented at VIS 2021 as part of the SciVis contest. 
+Progress updates, along with my thoughts, can be found in the [devlog](devlog/). The preliminary results were presented at VIS 2021 as part of the SciVis contest. See the paper on arXiv, [here](https://arxiv.org/abs/2110.13315).
 
 **This is active research.** If you have any thoughts, suggestions, or would like to collaborate, please reach out! You can also post questions/ideas in the [discussions section](https://github.com/tvhahn/EarthGAN/discussions).
 
 
+
+[![Source code](https://img.shields.io/badge/code-PyTorch-009900.svg)](https://github.com/tvhahn/EarthGAN/blob/master/src/models/train_model.py) [![arXiv](https://img.shields.io/badge/arXiv-2110.13315-b31b1b.svg)](https://arxiv.org/abs/2110.13315)
 
 ## Current Approach
 
