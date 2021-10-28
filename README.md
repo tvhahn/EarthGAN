@@ -20,6 +20,12 @@ Progress updates, along with my thoughts, can be found in the [devlog](devlog/).
 
 [![Source code](https://img.shields.io/badge/code-PyTorch-009900.svg)](https://github.com/tvhahn/EarthGAN/blob/master/src/models/train_model.py) [![arXiv](https://img.shields.io/badge/arXiv-2110.13315-b31b1b.svg)](https://arxiv.org/abs/2110.13315)
 
+Watch the presenation here:
+
+
+
+[![earthgan presentation](http://img.youtube.com/vi/QGjWRk3mMHk/0.jpg)](http://www.youtube.com/watch?v=QGjWRk3mMHk "EarthGAN presentation")
+
 ## Current Approach
 
 We're leveraging the excellent work of Li et al. who have implemented a GAN for creating [super-resolution cosmological simulations](https://www.pnas.org/content/118/19/e2022038118). The general method is in their [map2map](https://github.com/eelregit/map2map) repository. We've used their GAN implementation as it works on 3D data. Please cite their work if you find it useful!
