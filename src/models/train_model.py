@@ -115,7 +115,7 @@ GEN_PRETRAIN_EPOCHS = args.gen_pretrain_epochs
 #######################################################
 
 
-def plot_fake_truth(fake, x_truth, x_up, epoch_i, batch_i):
+def plot_fake_truth(fake, x_truth, x_up, epoch_i, batch_i, time_i):
     """Create the ground-truth, upscaled, and fake images used
     in Tensorboard"""
 
@@ -142,7 +142,7 @@ def plot_fake_truth(fake, x_truth, x_up, epoch_i, batch_i):
             ax[2, i].pcolormesh(x_truth[bi, vi, ri, :, :].cpu(), cmap=color_scheme)
             ax[2, i].get_xaxis().set_visible(False)
             ax[2, i].get_yaxis().set_visible(False)
-        plt.suptitle(f"Epoch {epoch_i}, Batch Index {batch_i}")
+        plt.suptitle(f"Epoch {epoch_i}, Batch Index {batch_i}, Time Step {time_i}")
         plt.subplots_adjust(wspace=0, hspace=0)
 
     return fig
@@ -283,12 +283,12 @@ def save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_cri
 
 
 def create_tensorboard_fig(
-    gen, x_input, x_truth, x_up, epoch, batch_idx, step, writer_results
+    gen, x_input, x_truth, x_up, epoch, batch_idx, time_i, step, writer_results
 ):
     with torch.no_grad():
         gen.eval()  # does this need to be included???
         fake = gen(x_input)
-        fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx)
+        fig = plot_fake_truth(fake, x_truth, x_up, epoch, batch_idx, time_i)
         writer_results.add_figure("Results", fig, global_step=step)
 
 
@@ -373,6 +373,7 @@ def train(
             x_truth = data["truth"].to(device)
             x_up = data["upsampled"].to(device)
             x_input = data["input"].to(device)
+            time_i = data["time_step_index"]
 
             # pre-train the generator with simple MSE loss
             if epoch < GEN_PRETRAIN_EPOCHS:
@@ -426,6 +427,7 @@ def train(
                         x_up,
                         epoch,
                         batch_idx,
+                        time_i,
                         step,
                         writer_results,
                     )

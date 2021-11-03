@@ -15,6 +15,7 @@ class EarthDataTrain(Dataset):
         random_roll=True,
         gen_input_width=10,
         gen_output_width=38,
+        var_to_include=1,
     ):
         """
         Args:
@@ -30,6 +31,7 @@ class EarthDataTrain(Dataset):
         self.gen_output_width = (
             gen_output_width  # width of the output from the generator
         )
+        self.var_to_include = var_to_include
         self.path_input_folder = path_input_folder
         self.path_truth_folder = path_truth_folder
 
@@ -50,7 +52,7 @@ class EarthDataTrain(Dataset):
         unique_steps_input = set(
             re.findall("[0-9]+", str(i))[-1] for i in file_list_input
         )
-        
+
         check_1 = unique_steps_input.difference(self.time_step_list)
         check_2 = set(self.time_step_list).difference(unique_steps_input)
 
@@ -60,6 +62,7 @@ class EarthDataTrain(Dataset):
         assert (
             len(check_2) == 0
         ), f"missing truth or input time step sample(s): {check_2}"
+        assert self.var_to_include > 0, "cannot select zero variables for data loader"
 
     def __getitem__(self, index):
 
@@ -122,10 +125,7 @@ class EarthDataTrain(Dataset):
         input_data = torch.roll(input_data, roll_n, 4)  # roll if used
 
         # select first N points for width
-        input_data = input_data[
-            :, :, :, :, : self.gen_input_width
-        ]  
-
+        input_data = input_data[:, :, :, :, : self.gen_input_width]
 
         input_data = pad_data(
             input_data, pad_top_bot=3, pad_sides=0
@@ -168,11 +168,21 @@ class EarthDataTrain(Dataset):
         # samples in truth/input folders stored as (# samples, # variables, Radial, Height, Width)
         # need to remove the # samples --> since each sample in folder has # samples = 1, we can
         # select it only
-        sample = {
-            "truth": torch.unsqueeze(truth_data[0, 0, :, :, :], 0),
-            "input": torch.unsqueeze(input_data[0, 0, :, :, :], 0),
-            "upsampled": torch.unsqueeze(up_data[0, 0, :, :, :], 0),
-        }
+        if self.var_to_include == 1:
+            sample = {
+                "truth": torch.unsqueeze(truth_data[0, 0, :, :, :], 0),
+                "input": torch.unsqueeze(input_data[0, 0, :, :, :], 0),
+                "upsampled": torch.unsqueeze(up_data[0, 0, :, :, :], 0),
+                "time_step_index": single_time_step,
+            }
+
+        else:
+            sample = {
+                "truth": truth_data[0, : self.var_to_include, :, :, :],
+                "input": input_data[0, : self.var_to_include, :, :, :],
+                "upsampled": up_data[0, : self.var_to_include, :, :, :],
+                "time_step_index": single_time_step,
+            }
 
         return sample
 
