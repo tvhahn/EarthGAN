@@ -142,7 +142,7 @@ def plot_fake_truth(fake, x_truth, x_up, epoch_i, batch_i, time_i):
             ax[2, i].pcolormesh(x_truth[bi, vi, ri, :, :].cpu(), cmap=color_scheme)
             ax[2, i].get_xaxis().set_visible(False)
             ax[2, i].get_yaxis().set_visible(False)
-        plt.suptitle(f"Epoch {epoch_i}, Batch Index {batch_i}, Time Step {time_i}")
+        plt.suptitle(f"Epoch {epoch_i}, Batch Index {batch_i}, Time Step {time_i[bi]}")
         plt.subplots_adjust(wspace=0, hspace=0)
 
     return fig
@@ -419,7 +419,7 @@ def train(
                 
             if epoch > GEN_PRETRAIN_EPOCHS:
                 if batch_idx % 10 == 0:
-
+                        
                     create_tensorboard_fig(
                         gen,
                         x_input,
@@ -445,6 +445,7 @@ def train(
                         x_up,
                         epoch,
                         batch_idx,
+                        time_i,
                         step,
                         writer_results,
                     )
