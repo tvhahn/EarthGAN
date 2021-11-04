@@ -29,9 +29,8 @@ def wasserstein_distance_loss(input, target):
 def wgan_grad_penalty(critic, x, y, lam=10):
     """Calculate the gradient penalty for WGAN
     """
-    device = x.device
     batch_size = x.shape[0]
-    alpha = torch.rand(batch_size, device=device)
+    alpha = torch.rand(batch_size).cuda()
     alpha = alpha.reshape(batch_size, *(1,) * (x.dim() - 1))
 
     xy = alpha * x.detach() + (1 - alpha) * y.detach()
@@ -61,9 +60,9 @@ def wgan_grad_penalty(critic, x, y, lam=10):
 
 # modified from Aladdin Persson 
 # https://github.com/aladdinpersson/Machine-Learning-Collection/blob/master/ML/Pytorch/GANs/4.%20WGAN-GP/utils.py
-def gradient_penalty(critic, real, fake, device="cpu"):
+def gradient_penalty(critic, real, fake):
     BATCH_SIZE, C, R, H, W = real.shape
-    alpha = torch.rand((BATCH_SIZE, 1, 1, 1, 1)).repeat(1, C, R, H, W).to(device)
+    alpha = torch.rand((BATCH_SIZE, 1, 1, 1, 1)).repeat(1, C, R, H, W).cuda()
     interpolated_images = real * alpha + fake * (1 - alpha)
 
     # Calculate critic scores

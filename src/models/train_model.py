@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import horovod.torch as hvd
 import torchvision
 from torch.utils.tensorboard import SummaryWriter  # print to tensorboard
 from torch.utils.data import DataLoader
@@ -13,6 +14,7 @@ import datetime
 import re
 import argparse
 import shutil
+import logging
 
 
 from src.models.utils.create_batch import EarthDataTrain
@@ -295,15 +297,29 @@ def create_tensorboard_fig(
 def main():
     """Establish models and run training loop"""
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    # initialize Horovod
+
+    hvd.init()
+    torch.cuda.set_device(hvd.local_rank())
+
+    # Horovod: limit # of CPU threads to be used per worker.
+    torch.set_num_threads(2)
+
+    # device = "cuda" if torch.cuda.is_available() else "cpu"
 
     train_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
+
+    # partition data set among workers using DistributedSampler
+    train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset, num_replicas=hvd.size(), rank=hvd.rank())
 
     train_loader = DataLoader(
         train_dataset,
         batch_size=BATCH_SIZE,
-        shuffle=True,
+        sampler=train_sampler,
+        shuffle=(train_sampler is None),
+        num_workers=3,
     )
+
 
     gen = Generator(
         in_chan=1,
@@ -313,11 +329,11 @@ def main():
         chan_min=64,
         chan_max=512,
         cat_noise=args.cat_noise,
-    ).to(device)
+    ).cuda()
 
     critic = Discriminator(
         in_chan=2, out_chan=2, scale_factor=8, chan_base=512, chan_min=64, chan_max=512
-    ).to(device)
+    ).cuda()
 
     # initialize weights
     gen.apply(init_weights)
@@ -327,12 +343,14 @@ def main():
     opt_gen = optim.Adam(gen.parameters(), lr=LEARNING_RATE, betas=(0.0, 0.9))
     opt_critic = optim.Adam(critic.parameters(), lr=LEARNING_RATE, betas=(0.0, 0.9))
 
+    opt_gen = hvd.DistributedOptimizer(opt_gen, named_parameters=gen.named_parameters())
+    opt_critic = hvd.DistributedOptimizer(opt_critic, named_parameters=critic.named_parameters())
+
     train(
         gen,
         critic,
         opt_gen,
         opt_critic,
-        device,
         train_loader,
     )
 
@@ -342,7 +360,6 @@ def train(
     critic,
     opt_gen,
     opt_critic,
-    device,
     train_loader,
 ):
     """Training scrip"""
@@ -352,16 +369,26 @@ def train(
 
     # load from checkpoint if wanted
     if path_prev_checkpoint.exists():
-        print("Loading from previous checkpoint")
-        checkpoint = torch.load(path_prev_checkpoint)
-        epoch_start = checkpoint["epoch"] + 1
-        gen.load_state_dict(checkpoint["gen"])
-        critic.load_state_dict(checkpoint["critic"])
-        opt_gen.load_state_dict(checkpoint["opt_gen"])
-        opt_critic.load_state_dict(checkpoint["opt_critic"])
+        if hvd.rank() == 0:
+            print("Loading from previous checkpoint")
+            checkpoint = torch.load(path_prev_checkpoint)
+            epoch_start = checkpoint["epoch"] + 1
+            gen.load_state_dict(checkpoint["gen"])
+            critic.load_state_dict(checkpoint["critic"])
+            opt_gen.load_state_dict(checkpoint["opt_gen"])
+            opt_critic.load_state_dict(checkpoint["opt_critic"])
 
     else:
         epoch_start = 0
+
+
+
+    # broadcast parameters from rank 0 to all other processes.
+    hvd.broadcast_parameters(gen.state_dict(), root_rank=0)
+    hvd.broadcast_parameters(critic.state_dict(), root_rank=0)
+
+    hvd.broadcast_optimizer_state(opt_gen, root_rank=0)
+    hvd.broadcast_optimizer_state(opt_critic, root_rank=0)
 
     step = 0
     for epoch in range(epoch_start, epoch_start + NUM_EPOCHS):
@@ -370,14 +397,14 @@ def train(
         print("epoch", epoch)
 
         for batch_idx, data in enumerate(train_loader):
-            x_truth = data["truth"].to(device)
-            x_up = data["upsampled"].to(device)
-            x_input = data["input"].to(device)
+            x_truth = data["truth"].cuda()
+            x_up = data["upsampled"].cuda()
+            x_input = data["input"].cuda()
             time_i = data["time_step_index"]
 
             # pre-train the generator with simple MSE loss
             if epoch < GEN_PRETRAIN_EPOCHS:
-                criterion = nn.MSELoss()
+                criterion = nn.MSELoss().cuda()
                 gen_fake = gen(x_input)
                 loss_mse = criterion(gen_fake, x_truth)
                 gen.zero_grad()
@@ -398,13 +425,12 @@ def train(
                         critic,
                         torch.cat([x_truth, x_up], dim=1),  # real
                         torch.cat([fake, x_up], dim=1),  # fake
-                        device=device,
-                    )
+                    ).cuda()
 
                     loss_critic = (
                         -(torch.mean(critic_real) - torch.mean(critic_fake))
                         + LAMBDA_GP * gp
-                    )
+                    ).cuda()
 
                     critic.zero_grad()
                     loss_critic.backward(retain_graph=True)
@@ -412,53 +438,59 @@ def train(
 
                 # train generator after every N critic iterations
                 gen_fake = critic(torch.cat([fake, x_up], dim=1)).reshape(-1)
-                loss_gen = -torch.mean(gen_fake)
+                loss_gen = -torch.mean(gen_fake).cuda()
                 gen.zero_grad()
                 loss_gen.backward()
                 opt_gen.step()
                 
             if epoch > GEN_PRETRAIN_EPOCHS:
                 if batch_idx % 10 == 0:
+                    if hvd.rank() == 0:
                         
-                    create_tensorboard_fig(
-                        gen,
-                        x_input,
-                        x_truth,
-                        x_up,
-                        epoch,
-                        batch_idx,
-                        time_i,
-                        step,
-                        writer_results,
-                    )
-                    save_checkpoint(
-                        epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic
-                    )
-                    step += 1
+                        create_tensorboard_fig(
+                            gen,
+                            x_input,
+                            x_truth,
+                            x_up,
+                            epoch,
+                            batch_idx,
+                            time_i,
+                            step,
+                            writer_results,
+                        )
+                        save_checkpoint(
+                            epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic
+                        )
+                        step += 1
             else:
                 if batch_idx % 10 == 0:
+                    if hvd.rank() == 0:
 
-                    create_tensorboard_fig(
-                        gen,
-                        x_input,
-                        x_truth,
-                        x_up,
-                        epoch,
-                        batch_idx,
-                        time_i,
-                        step,
-                        writer_results,
-                    )
-                    save_checkpoint(
-                        epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic
-                    )
-                    step += 1
+                        create_tensorboard_fig(
+                            gen,
+                            x_input,
+                            x_truth,
+                            x_up,
+                            epoch,
+                            batch_idx,
+                            time_i,
+                            step,
+                            writer_results,
+                        )
+                        save_checkpoint(
+                            epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic
+                        )
+                        step += 1
 
         # save checkpoint at end of epoch
-        save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
+        if hvd.rank() == 0:
+            save_checkpoint(epoch, path_checkpoint_folder, gen, critic, opt_gen, opt_critic)
 
 
 if __name__ == "__main__":
+
+    log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    logging.basicConfig(level=logging.INFO, format=log_fmt)
 
     (
         root_dir,
