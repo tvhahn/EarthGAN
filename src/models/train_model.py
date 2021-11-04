@@ -38,6 +38,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--model_time_suffix",
+    dest="model_time_suffix",
+    type=str,
+    help="Optional suffix string to append at the end of the model start time identifier",
+)
+
+parser.add_argument(
     "-p",
     "--proj_dir",
     dest="proj_dir",
@@ -201,7 +208,10 @@ def set_directories():
         proj_dir = Path.cwd()
 
     # set time
-    model_start_time = datetime.datetime.now().strftime("%Y_%m_%d_%H%M%S")
+    if args.model_time_suffix:
+        model_start_time = datetime.datetime.now().strftime("%Y_%m_%d_%H%M%S") + "_" + args.model_time_suffix
+    else:
+        model_start_time = datetime.datetime.now().strftime("%Y_%m_%d_%H%M%S")
 
     if scratch_path.exists():
         # for HPC

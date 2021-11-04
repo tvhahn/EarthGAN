@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --account=rrg-mechefsk
-#SBATCH --gres=gpu:v100:1        # request GPU "generic resource"
+#SBATCH --gres=gpu:t4:1        # request GPU "generic resource"
 #SBATCH --cpus-per-task=4   # maximum CPU cores per GPU request: 6 on Cedar, 16 on Graham.
 #SBATCH --mem=14000M      # memory per node
-#SBATCH --time=0-23:50      # time (DD-HH:MM)
+#SBATCH --time=0-00:15      # time (DD-HH:MM)
 #SBATCH --output=%N-%j.out  # %N for node name, %j for jobID
 #SBATCH --mail-type=ALL               # Type of email notification- BEGIN,END,F$
 #SBATCH --mail-user=18tcvh@queensu.ca   # Email to which notifications will be $
@@ -28,6 +28,7 @@ python $PROJECT_DIR/src/models/train_model.py \
     --path_data $SLURM_TMPDIR/data/processed \
     --proj_dir $PROJECT_DIR \
     --checkpoint  2021_11_03_102524 \
+    --model_time_suffix foo \
     --batch_size 1 \
     --var_to_include 1 \
     --learning_rate 1e-4 \
