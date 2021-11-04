@@ -300,10 +300,11 @@ def main():
     # initialize Horovod
 
     hvd.init()
-    torch.cuda.set_device(hvd.local_rank())
+    if torch.cuda.is_available():
+        torch.cuda.set_device(hvd.local_rank())
 
     # Horovod: limit # of CPU threads to be used per worker.
-    torch.set_num_threads(2)
+    # torch.set_num_threads(2)
 
     # device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -311,6 +312,8 @@ def main():
 
     # partition data set among workers using DistributedSampler
     train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset, num_replicas=hvd.size(), rank=hvd.rank())
+    print("hvd.rank():", hvd.rank())
+    print("hvd.size():", hvd.size())
 
     train_loader = DataLoader(
         train_dataset,
@@ -335,34 +338,13 @@ def main():
         in_chan=2, out_chan=2, scale_factor=8, chan_base=512, chan_min=64, chan_max=512
     ).cuda()
 
-    # initialize weights
-    gen.apply(init_weights)
-    critic.apply(init_weights)
+
 
     # initializate optimizer
     opt_gen = optim.Adam(gen.parameters(), lr=LEARNING_RATE, betas=(0.0, 0.9))
     opt_critic = optim.Adam(critic.parameters(), lr=LEARNING_RATE, betas=(0.0, 0.9))
 
-    opt_gen = hvd.DistributedOptimizer(opt_gen, named_parameters=gen.named_parameters())
-    opt_critic = hvd.DistributedOptimizer(opt_critic, named_parameters=critic.named_parameters())
 
-    train(
-        gen,
-        critic,
-        opt_gen,
-        opt_critic,
-        train_loader,
-    )
-
-
-def train(
-    gen,
-    critic,
-    opt_gen,
-    opt_critic,
-    train_loader,
-):
-    """Training scrip"""
 
     # set summary writer for Tensorboard
     writer_results = SummaryWriter(root_dir / "models/interim/logs/" / model_start_time)
@@ -379,16 +361,24 @@ def train(
             opt_critic.load_state_dict(checkpoint["opt_critic"])
 
     else:
+        # if hvd.rank() == 0:
+        #     # initialize weights
+        #     gen.apply(init_weights)
+        #     critic.apply(init_weights)
         epoch_start = 0
 
 
 
+
+    # hvd.broadcast_optimizer_state(opt_gen, root_rank=0)
+    # hvd.broadcast_optimizer_state(opt_critic, root_rank=0)
+
+    opt_gen = hvd.DistributedOptimizer(opt_gen, named_parameters=gen.named_parameters())
+    opt_critic = hvd.DistributedOptimizer(opt_critic, named_parameters=critic.named_parameters())
+
     # broadcast parameters from rank 0 to all other processes.
     hvd.broadcast_parameters(gen.state_dict(), root_rank=0)
     hvd.broadcast_parameters(critic.state_dict(), root_rank=0)
-
-    hvd.broadcast_optimizer_state(opt_gen, root_rank=0)
-    hvd.broadcast_optimizer_state(opt_critic, root_rank=0)
 
     step = 0
     for epoch in range(epoch_start, epoch_start + NUM_EPOCHS):

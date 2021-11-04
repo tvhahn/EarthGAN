@@ -1,9 +1,10 @@
 #!/bin/bash
 #SBATCH --account=rrg-mechefsk
 #SBATCH --gres=gpu:2     # request GPU "generic resource"
-#SBATCH --cpus-per-task=8   # maximum CPU cores per GPU request: 6 on Cedar, 16 on Graham.
+#SBATCH --tasks-per-node=2 
+#SBATCH --cpus-per-task=4   # maximum CPU cores per GPU request: 6 on Cedar, 16 on Graham.
 #SBATCH --mem=14000M      # memory per node
-#SBATCH --time=0-00:20      # time (DD-HH:MM)
+#SBATCH --time=0-00:15      # time (DD-HH:MM)
 #SBATCH --output=%N-%j.out  # %N for node name, %j for jobID
 #SBATCH --mail-type=ALL               # Type of email notification- BEGIN,END,F$
 #SBATCH --mail-user=18tcvh@queensu.ca   # Email to which notifications will be $
@@ -18,6 +19,8 @@ source ~/earth/bin/activate
 # this will be much faster as the train_model.py rapidly access the training data
 mkdir $SLURM_TMPDIR/data
 cp -r ~/scratch/earth-mantle-surrogate/processed $SLURM_TMPDIR/data
+
+export NCCL_BLOCKING_WAIT=1
 
 # load tensorboard
 # cd
