@@ -13,6 +13,7 @@ import datetime
 import re
 import argparse
 import shutil
+import logging
 
 
 from src.models.utils.create_batch import EarthDataTrain
@@ -330,8 +331,8 @@ def main():
     )
 
     gen = Generator(
-        in_chan=1,
-        out_chan=1,
+        in_chan=VAR_TO_INCLUDE,
+        out_chan=VAR_TO_INCLUDE,
         scale_factor=8,
         chan_base=128,
         chan_min=64,
@@ -340,7 +341,7 @@ def main():
     ).to(device)
 
     critic = Discriminator(
-        in_chan=2, out_chan=2, scale_factor=8, chan_base=512, chan_min=64, chan_max=512
+        in_chan=VAR_TO_INCLUDE*2, out_chan=VAR_TO_INCLUDE*2, scale_factor=8, chan_base=512, chan_min=64, chan_max=512
     ).to(device)
 
     # initialize weights
@@ -483,6 +484,9 @@ def train(
 
 
 if __name__ == "__main__":
+
+    log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    logging.basicConfig(level=logging.INFO, format=log_fmt)
 
     (
         root_dir,
