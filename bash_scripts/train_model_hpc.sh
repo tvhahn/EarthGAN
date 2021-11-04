@@ -29,6 +29,7 @@ python $PROJECT_DIR/src/models/train_model.py \
     --proj_dir $PROJECT_DIR \
     --checkpoint  2021_11_03_102524 \
     --batch_size 1 \
+    --var_to_include 1 \
     --learning_rate 1e-4 \
     --critic_iterations 5 \
     --num_epochs 500 \

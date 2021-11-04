@@ -45,6 +45,17 @@ parser.add_argument(
     help="Location of project folder",
 )
 
+
+parser.add_argument(
+    "--var_to_include",
+    dest="var_to_include",
+    type=int,
+    default=1,
+    help="Number of variables to be trained on. var_to_include=1 \
+        is only the temperature data. \
+        var_to_include=4 is the temperature, vx, vy, and vz.",
+)
+
 parser.add_argument(
     "--batch_size",
     dest="batch_size",
@@ -108,6 +119,7 @@ BATCH_SIZE = args.batch_size
 CRITIC_ITERATIONS = args.critic_iterations
 LAMBDA_GP = args.lambda_gp
 GEN_PRETRAIN_EPOCHS = args.gen_pretrain_epochs
+VAR_TO_INCLUDE = args.var_to_include
 
 
 ########################################################
@@ -297,7 +309,9 @@ def main():
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    train_dataset = EarthDataTrain(path_input_folder, path_truth_folder)
+    train_dataset = EarthDataTrain(
+        path_input_folder, path_truth_folder, var_to_include=VAR_TO_INCLUDE
+    )
 
     train_loader = DataLoader(
         train_dataset,
@@ -416,10 +430,10 @@ def train(
                 gen.zero_grad()
                 loss_gen.backward()
                 opt_gen.step()
-                
+
             if epoch > GEN_PRETRAIN_EPOCHS:
                 if batch_idx % 10 == 0:
-                        
+
                     create_tensorboard_fig(
                         gen,
                         x_input,
