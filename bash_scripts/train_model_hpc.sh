@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=4   # maximum CPU cores per GPU request: 6 on Cedar, 16 on Graham.
 #SBATCH --mem=14000M      # memory per node
 #SBATCH --time=0-23:50      # time (DD-HH:MM)
-#SBATCH --job-name=var4
+#SBATCH --job-name=var1
 #SBATCH --output=%N-%j-var4.out  # %N for node name, %j for jobID
 #SBATCH --mail-type=ALL               # Type of email notification- BEGIN,END,F$
 #SBATCH --mail-user=18tcvh@queensu.ca   # Email to which notifications will be $
@@ -36,5 +36,5 @@ python $PROJECT_DIR/src/models/train_model.py \
     --lambda_gp 10 \
     --gen_pretrain_epochs 20 \
     --model_time_suffix var1 \
-    --checkpoint  2021_11_05_101550_var1 \
+    --checkpoint  2021_11_06_141857_var1 \
     # --cat_noise
