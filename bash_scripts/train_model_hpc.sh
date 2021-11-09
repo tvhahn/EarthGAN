@@ -5,7 +5,7 @@
 #SBATCH --mem=14000M      # memory per node
 #SBATCH --time=0-23:50      # time (DD-HH:MM)
 #SBATCH --job-name=var4
-#SBATCH --output=%N-%j-var4.out  # %N for node name, %j for jobID
+#SBATCH --output=%N-%j.out  # %N for node name, %j for jobID
 #SBATCH --mail-type=ALL               # Type of email notification- BEGIN,END,F$
 #SBATCH --mail-user=18tcvh@queensu.ca   # Email to which notifications will be $
 
@@ -36,5 +36,5 @@ python $PROJECT_DIR/src/models/train_model.py \
     --lambda_gp 10 \
     --gen_pretrain_epochs 20 \
     --model_time_suffix var4 \
-    --checkpoint  2021_11_07_235152_var4 \
+    --checkpoint  2021_11_08_133347_var4 \
     # --cat_noise
