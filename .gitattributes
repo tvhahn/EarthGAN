@@ -3,4 +3,5 @@ notebooks/1.0_data-explore.ipynb linguist-documentation
 notebooks/3.0_generate_fake_example.ipynb linguist-documentation
 # notebooks/2.0_data-loader.ipynb linguist-documentation
 *explore.ipynb linguist-documentation
+*.ipynb linguist-documentation
 src/models/train_model.ipynb linguist-documentation
