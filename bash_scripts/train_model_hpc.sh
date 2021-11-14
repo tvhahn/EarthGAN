@@ -36,5 +36,5 @@ python $PROJECT_DIR/src/models/train_model.py \
     --lambda_gp 10 \
     --gen_pretrain_epochs 20 \
     --model_time_suffix var1 \
-    --checkpoint  2021_11_12_123022_var1 \
+    --checkpoint  2021_11_13_122316_var1 \
     # --cat_noise
