@@ -34,7 +34,7 @@ python $PROJECT_DIR/src/models/train_model.py \
     --critic_iterations 5 \
     --num_epochs 1000 \
     --lambda_gp 10 \
-    --gen_pretrain_epochs 20 \
+    --gen_pretrain_epochs 1 \
     --model_time_suffix var1 \
-    --checkpoint  2021_11_16_122307_var1 \
+    --checkpoint  2021_11_17_121145_var1 \
     # --cat_noise
