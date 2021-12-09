@@ -20,11 +20,20 @@ Progress updates, along with my thoughts, can be found in the [devlog](devlog/).
 
 [![Source code](https://img.shields.io/badge/code-PyTorch-009900.svg)](https://github.com/tvhahn/EarthGAN/blob/master/src/models/train_model.py) [![arXiv](https://img.shields.io/badge/arXiv-2110.13315-b31b1b.svg)](https://arxiv.org/abs/2110.13315)
 
-Watch the presenation here:
-
-
+Watch the presentation here:
 
 [![earthgan presentation](http://img.youtube.com/vi/QGjWRk3mMHk/0.jpg)](http://www.youtube.com/watch?v=QGjWRk3mMHk "EarthGAN presentation")
+
+Feel free to cite the research if you find it useful in your work:
+
+```
+@article{von2021earthgan,
+  title={EarthGAN: Can we visualize the Earth's mantle convection using a surrogate model?},
+  author={von Hahn, Tim and Mechefske, Chris K},
+  journal={arXiv preprint arXiv:2110.13315},
+  year={2021}
+}
+```
 
 ## Current Approach
 
